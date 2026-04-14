@@ -7,7 +7,8 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;overflow:hidden;background:#0a0a1a;font-family:'Segoe UI',system-ui,sans-serif}
-canvas{display:block;width:100%;height:100%;image-rendering:pixelated}
+canvas#game{display:block;width:100%;height:100%}
+canvas#minimap{image-rendering:pixelated}
 #ui{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10}
 #ui>*{pointer-events:auto}
 #dialogue-box{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);width:min(90%,700px);background:rgba(10,10,40,0.92);border:2px solid rgba(255,220,150,0.4);border-radius:16px;padding:20px 24px;display:none;z-index:100;backdrop-filter:blur(8px)}
@@ -58,6 +59,9 @@ canvas{display:block;width:100%;height:100%;image-rendering:pixelated}
 #title-screen h1{font-size:clamp(32px,8vw,64px);color:#ffcc66;text-shadow:0 0 30px rgba(255,200,100,0.4),0 4px 8px rgba(0,0,0,0.5);margin-bottom:8px;letter-spacing:3px}
 #title-screen h2{font-size:clamp(14px,3vw,20px);color:rgba(255,220,150,0.5);font-weight:400;margin-bottom:40px;letter-spacing:6px;text-transform:uppercase}
 #title-screen .prompt{color:rgba(255,220,150,0.6);font-size:14px;animation:blink 1.5s infinite}
+#title-screen .instructions{max-width:480px;margin:0 auto 30px;padding:20px 24px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,220,150,0.15);border-radius:14px;text-align:left;color:rgba(255,220,150,0.55);font-size:13px;line-height:1.7;backdrop-filter:blur(4px)}
+#title-screen .instructions h3{color:rgba(255,220,150,0.8);font-size:14px;margin-bottom:8px;text-align:center;letter-spacing:2px}
+#title-screen .instructions .keys{display:inline-block;background:rgba(255,220,150,0.12);border:1px solid rgba(255,220,150,0.25);border-radius:4px;padding:1px 6px;font-size:11px;color:rgba(255,220,150,0.7);font-family:monospace;margin:0 2px}
 #sound-toggle{position:fixed;top:12px;left:12px;width:36px;height:36px;background:rgba(10,10,40,0.7);border:1px solid rgba(255,220,150,0.3);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:500;font-size:16px;color:#ffcc66;transition:all 0.2s}
 #sound-toggle:hover{background:rgba(255,220,150,0.15)}
 #zone-label{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:clamp(24px,6vw,48px);color:#ffcc66;text-shadow:0 0 30px rgba(255,200,100,0.5);opacity:0;z-index:60;pointer-events:none;font-weight:700;letter-spacing:4px;text-transform:uppercase}
@@ -72,7 +76,7 @@ canvas{display:block;width:100%;height:100%;image-rendering:pixelated}
 </style>
 </head>
 <body>
-<div id="title-screen"><h1>✦ Starfall Shores ✦</h1><h2>An Island Adventure</h2><div class="prompt">Click anywhere to begin</div></div>
+<div id="title-screen"><h1>✦ Starfall Shores ✦</h1><h2>An Island Adventure</h2><div class="instructions"><h3>HOW TO PLAY</h3>🚶 <span class="keys">WASD</span> or <span class="keys">Arrow Keys</span> to move<br>💬 <span class="keys">E</span> or <span class="keys">Space</span> to talk &amp; interact<br>🎒 <span class="keys">I</span> to open inventory<br>📜 <span class="keys">Q</span> to view quest log<br>🔊 <span class="keys">M</span> to toggle sound<br><br>🌟 <em>Explore the island, befriend the locals, and collect 5 Starfall Crystals to save the island!</em><br>📱 <em style="font-size:11px">Mobile: virtual joystick + ACT/BAG buttons</em></div><div class="prompt">Click anywhere to begin</div></div>
 <canvas id="game"></canvas>
 <div id="ui">
 <div id="hud"></div>
@@ -702,64 +706,207 @@ function renderWorld(ctx) {
     ctx.globalAlpha = 1;
   }
 
-  // Render tiles
+  // Pseudo-random hash for consistent per-tile variation
+  function tileHash(x, y, seed) {
+    const n = Math.sin(x * 374.761 + y * 668.265 + (seed||0) * 127.1) * 43758.5453;
+    return n - Math.floor(n);
+  }
+  function colorShift(hex, amount) {
+    const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+    const nr = clamp(r + amount, 0, 255), ng = clamp(g + amount, 0, 255), nb = clamp(b + amount, 0, 255);
+    return `rgb(${nr},${ng},${nb})`;
+  }
+
+  // Render tiles — smooth, organic terrain
   for (let y = startY; y < endY; y++) {
     for (let x = startX; x < endX; x++) {
       const tile = zone.tiles[y]?.[x];
       if (tile === undefined) continue;
       const sx = x * T - cx, sy = y * T - cy;
       const baseColor = colors[tile] || '#333';
-      ctx.fillStyle = baseColor;
-      ctx.fillRect(sx, sy, T+1, T+1);
+      const h = tileHash(x, y, 0);
+      const shift = Math.round((h - 0.5) * 16); // ±8 brightness variation
 
-      // Water animation
+      // Base fill with subtle per-tile color variation
+      ctx.fillStyle = colorShift(baseColor, shift);
+      ctx.fillRect(sx, sy, T + 1, T + 1);
+
+      // Organic noise overlay — soft blobs to break up flat color
+      const h2 = tileHash(x, y, 1);
+      const h3 = tileHash(x, y, 2);
+      ctx.fillStyle = rgba(255,255,255, h2 * 0.06);
+      ctx.beginPath();
+      ctx.arc(sx + h2 * T, sy + h3 * T, T * (0.25 + h * 0.2), 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = rgba(0,0,0, h3 * 0.05);
+      ctx.beginPath();
+      ctx.arc(sx + h3 * T, sy + h2 * T, T * (0.2 + h2 * 0.15), 0, Math.PI * 2);
+      ctx.fill();
+
+      // Water
       if (tile === 1) {
-        const wave = Math.sin(G.time * 2 + x * 0.5 + y * 0.3) * 0.15;
-        ctx.fillStyle = rgba(255,255,255, 0.1 + wave * 0.05);
-        ctx.fillRect(sx, sy + T*(0.3+wave*0.2), T+1, T*0.2);
-        // Water sparkle
-        if (Math.sin(G.time*3+x*7+y*13) > 0.95) {
-          ctx.fillStyle = rgba(255,255,255,0.4);
-          ctx.fillRect(sx+rng(0,T),sy+rng(0,T),2,2);
+        const wave = Math.sin(G.time * 1.5 + x * 0.7 + y * 0.4) * 0.15;
+        const wave2 = Math.sin(G.time * 0.8 + x * 0.3 - y * 0.6) * 0.1;
+        // Ripple bands
+        ctx.fillStyle = rgba(180, 220, 255, 0.12 + wave * 0.06);
+        ctx.fillRect(sx, sy + T * (0.2 + wave * 0.3), T + 1, T * 0.15);
+        ctx.fillStyle = rgba(200, 240, 255, 0.08 + wave2 * 0.04);
+        ctx.fillRect(sx, sy + T * (0.6 + wave2 * 0.2), T + 1, T * 0.12);
+        // Specular highlight
+        if (Math.sin(G.time * 2.5 + x * 7.3 + y * 13.1) > 0.92) {
+          ctx.fillStyle = rgba(255,255,255, 0.35);
+          const sparkX = sx + tileHash(x,y,5) * T;
+          const sparkY = sy + tileHash(x,y,6) * T;
+          ctx.beginPath();
+          ctx.arc(sparkX, sparkY, 1.5, 0, Math.PI * 2);
+          ctx.fill();
         }
       }
-      // Flower subtle animation
-      if (tile === 6) {
-        const sway = Math.sin(G.time*1.5+x*3+y*5)*2;
-        ctx.fillStyle = ['#ff69b4','#ff6347','#ffd700','#da70d6'][Math.abs((x*7+y*13)%4)];
+      // Grass detail — tiny blades & color dappling
+      else if (tile === 0) {
+        for (let i = 0; i < 3; i++) {
+          const bx = sx + tileHash(x,y,i+3) * T;
+          const by = sy + tileHash(x,y,i+6) * T;
+          const grassH = 4 + tileHash(x,y,i+9) * 6;
+          const sway = Math.sin(G.time * 0.8 + x + i) * 1.5;
+          ctx.strokeStyle = rgba(60, 140 + Math.round(h*40), 40, 0.35);
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(bx, by);
+          ctx.lineTo(bx + sway, by - grassH);
+          ctx.stroke();
+        }
+      }
+      // Flower
+      else if (tile === 6) {
+        // Grass-base first
+        for (let i = 0; i < 2; i++) {
+          const bx = sx + tileHash(x,y,i+10) * T;
+          const by = sy + tileHash(x,y,i+12) * T;
+          ctx.strokeStyle = rgba(60, 140, 40, 0.3);
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(bx, by);
+          ctx.lineTo(bx + Math.sin(G.time + i) * 1, by - 5);
+          ctx.stroke();
+        }
+        const sway = Math.sin(G.time * 1.5 + x * 3 + y * 5) * 2;
+        const flowerColor = ['#ff69b4','#ff6347','#ffd700','#da70d6'][Math.abs((x*7+y*13)%4)];
+        // Stem
+        ctx.strokeStyle = '#3a8030';
+        ctx.lineWidth = 1.5;
         ctx.beginPath();
-        ctx.arc(sx+T/2+sway, sy+T/2, T*0.2, 0, Math.PI*2);
-        ctx.fill();
+        ctx.moveTo(sx + T / 2, sy + T * 0.8);
+        ctx.quadraticCurveTo(sx + T / 2 + sway * 0.5, sy + T * 0.5, sx + T / 2 + sway, sy + T * 0.35);
+        ctx.stroke();
+        // Petals
+        ctx.fillStyle = flowerColor;
+        for (let p = 0; p < 5; p++) {
+          const pa = (Math.PI * 2 / 5) * p + G.time * 0.3;
+          ctx.beginPath();
+          ctx.ellipse(sx + T / 2 + sway + Math.cos(pa) * 4, sy + T * 0.35 + Math.sin(pa) * 4, 3, 2, pa, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        // Center
         ctx.fillStyle = '#ffff00';
         ctx.beginPath();
-        ctx.arc(sx+T/2+sway, sy+T/2, T*0.08, 0, Math.PI*2);
+        ctx.arc(sx + T / 2 + sway, sy + T * 0.35, 2, 0, Math.PI * 2);
         ctx.fill();
       }
       // Tall grass sway
-      if (tile === 7) {
-        const sway = Math.sin(G.time+x*2+y*3)*3;
-        ctx.strokeStyle = rgba(100,180,60,0.6);
-        ctx.lineWidth = 1.5;
-        for (let g=0;g<3;g++) {
+      else if (tile === 7) {
+        for (let g = 0; g < 5; g++) {
+          const sway = Math.sin(G.time * 0.9 + x * 1.7 + g * 1.3 + y * 0.6) * 4;
+          const gx = sx + T * (0.1 + g * 0.18 + tileHash(x,y,g) * 0.1);
+          const bladeH = T * (0.4 + tileHash(x,y,g+5) * 0.35);
+          ctx.strokeStyle = rgba(70 + Math.round(tileHash(x,y,g+10)*40), 160 + Math.round(tileHash(x,y,g+15)*40), 40, 0.55);
+          ctx.lineWidth = 1.5;
           ctx.beginPath();
-          ctx.moveTo(sx+T*(0.2+g*0.3), sy+T);
-          ctx.quadraticCurveTo(sx+T*(0.2+g*0.3)+sway, sy+T*0.3, sx+T*(0.3+g*0.3)+sway*1.5, sy+T*0.1);
+          ctx.moveTo(gx, sy + T);
+          ctx.quadraticCurveTo(gx + sway * 0.5, sy + T - bladeH * 0.5, gx + sway, sy + T - bladeH);
           ctx.stroke();
         }
       }
       // Crystal glow
-      if (tile === 11) {
-        const pulse = Math.sin(G.time*2+x*5+y*7)*0.3+0.7;
-        const cg = ctx.createRadialGradient(sx+T/2,sy+T/2,0,sx+T/2,sy+T/2,T);
-        cg.addColorStop(0, rgba(0,206,209, 0.4*pulse));
+      else if (tile === 11) {
+        const pulse = Math.sin(G.time * 2 + x * 5 + y * 7) * 0.3 + 0.7;
+        const cg = ctx.createRadialGradient(sx + T/2, sy + T/2, 0, sx + T/2, sy + T/2, T * 1.2);
+        cg.addColorStop(0, rgba(0, 206, 209, 0.35 * pulse));
+        cg.addColorStop(0.5, rgba(0, 150, 180, 0.1 * pulse));
         cg.addColorStop(1, 'transparent');
         ctx.fillStyle = cg;
-        ctx.fillRect(sx-T/2, sy-T/2, T*2, T*2);
+        ctx.fillRect(sx - T/2, sy - T/2, T * 2, T * 2);
+        // Tiny crystal shard shapes
+        ctx.fillStyle = rgba(150, 240, 255, 0.3 * pulse);
+        ctx.beginPath();
+        ctx.moveTo(sx + T*0.4, sy + T*0.6);
+        ctx.lineTo(sx + T*0.5, sy + T*0.2);
+        ctx.lineTo(sx + T*0.6, sy + T*0.6);
+        ctx.closePath();
+        ctx.fill();
       }
-      // Path detail
-      if (tile === 8) {
-        ctx.fillStyle = rgba(0,0,0,0.05);
-        if ((x+y)%2===0) ctx.fillRect(sx+2,sy+2,T-4,T-4);
+      // Path — worn cobblestone look
+      else if (tile === 8) {
+        // Subtle stone pattern
+        for (let s = 0; s < 3; s++) {
+          const stoneX = sx + tileHash(x,y,s+20) * T * 0.8 + T*0.1;
+          const stoneY = sy + tileHash(x,y,s+23) * T * 0.8 + T*0.1;
+          const stoneR = T * (0.08 + tileHash(x,y,s+26) * 0.06);
+          ctx.fillStyle = rgba(0,0,0, 0.04 + tileHash(x,y,s+29) * 0.03);
+          ctx.beginPath();
+          ctx.ellipse(stoneX, stoneY, stoneR * 1.3, stoneR, tileHash(x,y,s+32) * Math.PI, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      // Sand — grainy texture
+      else if (tile === 2) {
+        for (let d = 0; d < 4; d++) {
+          const dx = sx + tileHash(x,y,d+40) * T;
+          const dy = sy + tileHash(x,y,d+44) * T;
+          ctx.fillStyle = rgba(200,180,120, 0.08 + tileHash(x,y,d+48) * 0.06);
+          ctx.beginPath();
+          ctx.arc(dx, dy, 1 + tileHash(x,y,d+52), 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      // Snow — soft sparkle
+      else if (tile === 12) {
+        if (Math.sin(G.time * 1.5 + x * 11 + y * 7) > 0.85) {
+          ctx.fillStyle = rgba(255,255,255, 0.4);
+          ctx.beginPath();
+          ctx.arc(sx + tileHash(x,y,60) * T, sy + tileHash(x,y,61) * T, 1, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    }
+  }
+
+  // Soft edge transitions between different tile types
+  for (let y = startY; y < endY; y++) {
+    for (let x = startX; x < endX; x++) {
+      const tile = zone.tiles[y]?.[x];
+      if (tile === undefined) continue;
+      const sx = x * T - cx, sy = y * T - cy;
+      // Check neighboring tiles for edge blending
+      const tileR = zone.tiles[y]?.[x+1];
+      const tileB = zone.tiles[y+1]?.[x];
+      if (tileR !== undefined && tileR !== tile) {
+        // Soft vertical edge
+        const edgeGrad = ctx.createLinearGradient(sx + T - 6, 0, sx + T + 6, 0);
+        edgeGrad.addColorStop(0, 'transparent');
+        edgeGrad.addColorStop(0.5, rgba(0,0,0, 0.04));
+        edgeGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = edgeGrad;
+        ctx.fillRect(sx + T - 6, sy, 12, T);
+      }
+      if (tileB !== undefined && tileB !== tile) {
+        // Soft horizontal edge
+        const edgeGrad = ctx.createLinearGradient(0, sy + T - 6, 0, sy + T + 6);
+        edgeGrad.addColorStop(0, 'transparent');
+        edgeGrad.addColorStop(0.5, rgba(0,0,0, 0.04));
+        edgeGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = edgeGrad;
+        ctx.fillRect(sx, sy + T - 6, T, 12);
       }
     }
   }
