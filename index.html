@@ -83,6 +83,8 @@ canvas#minimap{image-rendering:pixelated}
 <button id="quest-btn" style="width:34px;height:34px;background:rgba(255,240,250,0.7);border:1px solid rgba(200,150,180,0.3);border-radius:50%;cursor:pointer;font-size:16px">📜</button>
 </div>
 <script>
+window._errors=[];
+window.onerror=function(msg,src,line,col,err){window._errors.push(line+": "+msg);document.title="ERR:"+line+":"+msg;};
 // ═══════════════════════════════════════════════════════════════
 // STARFALL SHORES — Whimsical Island Adventure
 // Soft pastel palette · Hand-drawn feel · Dreamy atmosphere
