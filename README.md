@@ -25,10 +25,11 @@ Starfall Shores is a charming island adventure where you explore beautiful zones
 - **5 Unique Zones**: Coral Beach, Starfall Village, Whispering Woods, Crystal Caves, Moonpeak Summit
 - **5 Charming NPCs**: Each with unique personalities, dialogue trees, and quests
 - **Quest System**: Main storyline + side quests with item trading
-- **Character Customization**: Skin tone, hair color/style, outfit color, and name
+- **Whimsical Art Style**: Soft pastel colors, hand-drawn feel, dreamy atmosphere
+- **Cute Character**: Play as Lily, an adorable girl with flowing brown hair and a pink bow
 - **Procedural Audio**: Adaptive ambient music + sound effects via Web Audio API
 - **Particle Effects**: Zone-specific ambient particles, sparkles, and event bursts
-- **Day/Night Cycle**: Dynamic sky colors and star visibility
+- **Soft Cloud Skies**: Dreamy pastel sky gradients with floating clouds
 - **Minimap**: Real-time zone overview with NPC/item/transition markers
 - **Mobile Support**: Touch joystick + action buttons, responsive layout
 - **Post-Processing**: Vignette, fog, ambient color grading, screen shake
@@ -43,7 +44,7 @@ The island of Starfall Shores draws its magic from the Star Anchor atop Moonpeak
 - Pure HTML5 Canvas + JavaScript
 - Web Audio API for all sound (procedural, zero assets)
 - Single `index.html` — no build tools, no frameworks, no assets
-- ~2600 lines of handcrafted code
+- ~2375 lines of handcrafted code
 
 ## 📜 License
 
