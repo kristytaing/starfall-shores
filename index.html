@@ -121,7 +121,7 @@ function resize() {
   canvas.width = window.innerWidth; canvas.height = window.innerHeight;
   CFG.VIEW_W = canvas.width; CFG.VIEW_H = canvas.height;
 }
-window.addEventListener('resize', resize); resize();
+resize();
 
 // ============ INPUT ============
 const keys = {}, keysJustPressed = {}, prevKeys = {};
@@ -413,6 +413,39 @@ function generateZones() {
     {id:'crystal_summit2',x:12*CFG.TILE,y:20*CFG.TILE,item:'Starfall Crystal',icon:'💎',taken:false,crystal:true});
   sm.transitions.push({x:11,y:0,w:3,h:1,to:'forest',toX:27*CFG.TILE,toY:33*CFG.TILE-24});
 }
+
+// ── Bridge: Aliases between old (G/ctx) and new (GS/CTX) code ──
+const GS = G;
+const CTX = ctx;
+const INPUT = { keys: keys, joystick: { active: false, dx: 0, dy: 0 } };
+function generateAllZones() { generateZones(); }
+function initAudio() { Audio.init(); }
+function playSound(type) {
+  switch(type) {
+    case 'step': Audio.playStep(); break;
+    case 'pickup': Audio.playPickup(); break;
+    case 'talk': case 'type': Audio.playInteract(); break;
+    case 'quest': Audio.playQuestComplete(); break;
+    case 'zone': Audio.playChime(392, 2); break;
+    case 'music': Audio.startAmbience(); break;
+    case 'ending': Audio.playCrystalCollect(); break;
+    default: Audio.playMenuClick();
+  }
+}
+// Fix GS fields that new code expects but old G doesn't have
+G.transitioning = false;
+G.transitionAlpha = 0;
+G.transitionTarget = null;
+G.transitionPhase = null;
+G.dialogue = { active: false, lines: [], lineIndex: 0, charIndex: 0, timer: 0, seen: {} };
+G.notifications = [];
+G.quests = { active: [], completed: [] };
+G.crystalsFound = 0;
+G.ending = false;
+G.endingTimer = 0;
+G.endingPhase = 0;
+G.screenShake = 0;
+G.screenFlash = 0;
 
 // ── Part 3: World Rendering ──────────────────────────────
 function renderWorld(){
