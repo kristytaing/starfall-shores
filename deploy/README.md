@@ -2,7 +2,7 @@
 
 > An Animal Crossing × Poptropica island adventure — built entirely in a single HTML file.
 
-[![Play Now](https://img.shields.io/badge/🎮_Play_Now-Starfall_Shores-gold?style=for-the-badge)](https://raw.githack.com/kristytaing/starfall-shores/main/index.html)
+[![Play Now](https://img.shields.io/badge/🎮_Play_Now-Starfall_Shores-gold?style=for-the-badge)](https://kristytaing.github.io/starfall-shores/)
 
 ![Starfall Shores](https://img.shields.io/badge/Genre-Island_Adventure-blue) ![Single File](https://img.shields.io/badge/Size-Single_HTML_File-green) ![No Dependencies](https://img.shields.io/badge/Dependencies-Zero-brightgreen)
 
