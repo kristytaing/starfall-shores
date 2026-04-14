@@ -2213,7 +2213,6 @@ function gameLoop(timestamp){
     }
   }
   requestAnimationFrame(gameLoop);
-setInterval(function(){document.title="S:"+GS.state+" Z:"+GS.currentZone+" P:"+Math.round(GS.player.x)+","+Math.round(GS.player.y)+" C:"+canvas.width+"x"+canvas.height;},500);
 }
 
 function updateNPCWander(dt){
@@ -2368,9 +2367,8 @@ document.getElementById('inv-btn').addEventListener('click', toggleInventory);
 document.getElementById('quest-btn').addEventListener('click', toggleQuestLog);
 
 // ── Initialize ───────────────────────────────────────────
-startGame();
+showTitleScreen();
 requestAnimationFrame(gameLoop);
-setInterval(function(){document.title="S:"+GS.state+" Z:"+GS.currentZone+" P:"+Math.round(GS.player.x)+","+Math.round(GS.player.y)+" C:"+canvas.width+"x"+canvas.height;},500);
 
 </script>
 </body>
