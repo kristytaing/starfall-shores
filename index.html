@@ -83,8 +83,6 @@ canvas#minimap{image-rendering:pixelated}
 <button id="quest-btn" style="width:34px;height:34px;background:rgba(255,240,250,0.7);border:1px solid rgba(200,150,180,0.3);border-radius:50%;cursor:pointer;font-size:16px">📜</button>
 </div>
 <script>
-window._errors=[];
-window.onerror=function(msg,src,line,col,err){window._errors.push(line+": "+msg);document.title="ERR:"+line+":"+msg;};
 // ═══════════════════════════════════════════════════════════════
 // STARFALL SHORES — Whimsical Island Adventure
 // Soft pastel palette · Hand-drawn feel · Dreamy atmosphere
@@ -2193,6 +2191,11 @@ function gameLoop(timestamp){
     renderParticles(GS.camera.x, GS.camera.y);
     renderPostProcessing();
     renderHUD();
+    // DEBUG INFO
+    CTX.fillStyle="red";CTX.font="14px monospace";
+    CTX.fillText("Zone:"+GS.currentZone+" P:"+Math.round(GS.player.x)+","+Math.round(GS.player.y),10,60);
+    CTX.fillText("State:"+GS.state+" Cam:"+Math.round(GS.camera.x)+","+Math.round(GS.camera.y),10,80);
+    CTX.fillText("Canvas:"+canvas.width+"x"+canvas.height,10,100);
     renderMinimap();
     renderNotifications();
     // Transition overlay
