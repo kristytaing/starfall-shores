@@ -2191,11 +2191,6 @@ function gameLoop(timestamp){
     renderParticles(GS.camera.x, GS.camera.y);
     renderPostProcessing();
     renderHUD();
-    // DEBUG INFO
-    CTX.fillStyle="red";CTX.font="14px monospace";
-    CTX.fillText("Zone:"+GS.currentZone+" P:"+Math.round(GS.player.x)+","+Math.round(GS.player.y),10,60);
-    CTX.fillText("State:"+GS.state+" Cam:"+Math.round(GS.camera.x)+","+Math.round(GS.camera.y),10,80);
-    CTX.fillText("Canvas:"+canvas.width+"x"+canvas.height,10,100);
     renderMinimap();
     renderNotifications();
     // Transition overlay
@@ -2218,6 +2213,7 @@ function gameLoop(timestamp){
     }
   }
   requestAnimationFrame(gameLoop);
+setInterval(function(){document.title="S:"+GS.state+" Z:"+GS.currentZone+" P:"+Math.round(GS.player.x)+","+Math.round(GS.player.y)+" C:"+canvas.width+"x"+canvas.height;},500);
 }
 
 function updateNPCWander(dt){
@@ -2374,6 +2370,7 @@ document.getElementById('quest-btn').addEventListener('click', toggleQuestLog);
 // ── Initialize ───────────────────────────────────────────
 startGame();
 requestAnimationFrame(gameLoop);
+setInterval(function(){document.title="S:"+GS.state+" Z:"+GS.currentZone+" P:"+Math.round(GS.player.x)+","+Math.round(GS.player.y)+" C:"+canvas.width+"x"+canvas.height;},500);
 
 </script>
 </body>
