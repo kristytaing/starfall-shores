@@ -1,0 +1,38 @@
+name: Sync to Portfolio Site
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout starfall-shores
+        uses: actions/checkout@v4
+        with:
+          path: starfall-shores
+
+      - name: Checkout portfolio repo
+        uses: actions/checkout@v4
+        with:
+          repository: kristytaing/kristytaing.github.io
+          token: ${{ secrets.PORTFOLIO_DEPLOY_TOKEN }}
+          path: portfolio
+
+      - name: Sync game files
+        run: |
+          rm -rf portfolio/starfall-shores
+          mkdir -p portfolio/starfall-shores
+          rsync -av --exclude='.git' --exclude='.github' \
+            starfall-shores/ portfolio/starfall-shores/
+
+      - name: Commit and push
+        run: |
+          cd portfolio
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add starfall-shores/
+          git diff --staged --quiet || git commit -m "Auto-sync starfall-shores from latest main"
+          git push
