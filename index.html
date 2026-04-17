@@ -1279,6 +1279,14 @@ function renderNPC(npc, camX, camY){
   CTX.restore();
 }
 
+function isSolid(zone, tx, ty){
+  const z = ZONES[zone];
+  if(!z) return true;
+  if(tx<0||ty<0||tx>=z.w||ty>=z.h) return true;
+  const tid = z.tiles[ty]?z.tiles[ty][tx]:0;
+  return tid===1; // only water/ocean tiles block movement
+}
+
 function checkCollision(px, py, zone){
   const T = CFG.TILE;
   const margin = 6;
