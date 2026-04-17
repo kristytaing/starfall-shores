@@ -119,20 +119,7 @@ const G = {
 // ============ CANVAS ============
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
-function resize() {
-  const dpr = window.devicePixelRatio || 1;
-  const w = window.innerWidth;
-  const h = window.innerHeight;
-  canvas.width = Math.round(w * dpr);
-  canvas.height = Math.round(h * dpr);
-  canvas.style.width = w + 'px';
-  canvas.style.height = h + 'px';
-  CFG.VIEW_W = w;
-  CFG.VIEW_H = h;
-  CFG.DPR = dpr;
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-}
-resize();
+
 
 // ============ INPUT ============
 const keys = {}, keysJustPressed = {}, prevKeys = {};
@@ -465,11 +452,11 @@ function renderWorld(){
   if(!z) return;
   const cam = GS.camera;
   // Sky gradient
-  const skyGrad = CTX.createLinearGradient(0,0,0,canvas.height);
+  const skyGrad = CTX.createLinearGradient(0,0,0,CFG.VIEW_H);
   skyGrad.addColorStop(0, z.skyTop);
   skyGrad.addColorStop(1, z.skyBot);
   CTX.fillStyle = skyGrad;
-  CTX.fillRect(0,0,canvas.width,canvas.height);
+  CTX.fillRect(0,0,CFG.VIEW_W,CFG.VIEW_H);
   // Distant soft clouds
   CTX.globalAlpha = 0.18;
   for(let i=0;i<6;i++){
@@ -488,8 +475,8 @@ function renderWorld(){
   const T = CFG.TILE;
   const startX = Math.max(0, Math.floor(cam.x/T));
   const startY = Math.max(0, Math.floor(cam.y/T));
-  const endX = Math.min(z.w, Math.ceil((cam.x+canvas.width)/T)+1);
-  const endY = Math.min(z.h, Math.ceil((cam.y+canvas.height)/T)+1);
+  const endX = Math.min(z.w, Math.ceil((cam.x+CFG.VIEW_W)/T)+1);
+  const endY = Math.min(z.h, Math.ceil((cam.y+CFG.VIEW_H)/T)+1);
   for(let y=startY;y<endY;y++){
     for(let x=startX;x<endX;x++){
       const tid = z.tiles[y]?z.tiles[y][x]:0;
@@ -1522,8 +1509,8 @@ function updateTransition(dt){
       GS.currentZone = t.zone;
       GS.player.x = t.x;
       GS.player.y = t.y;
-      GS.camera.x = t.x - canvas.width/2;
-      GS.camera.y = t.y - canvas.height/2;
+      GS.camera.x = t.x - CFG.VIEW_W/2;
+      GS.camera.y = t.y - CFG.VIEW_H/2;
       GS.transitionPhase = 'in';
       // Show zone name
       showNotification('✿ ' + t.zone.charAt(0).toUpperCase()+t.zone.slice(1) + ' ✿');
@@ -1541,13 +1528,13 @@ function updateCamera(){
   const z = ZONES[GS.currentZone];
   if(!z) return;
   const T = CFG.TILE;
-  const targetX = p.x + 16 - canvas.width/2;
-  const targetY = p.y + 24 - canvas.height/2;
+  const targetX = p.x + 16 - CFG.VIEW_W/2;
+  const targetY = p.y + 24 - CFG.VIEW_H/2;
   GS.camera.x += (targetX - GS.camera.x) * 0.08;
   GS.camera.y += (targetY - GS.camera.y) * 0.08;
   // Clamp
-  GS.camera.x = Math.max(0, Math.min(z.w*T-canvas.width, GS.camera.x));
-  GS.camera.y = Math.max(0, Math.min(z.h*T-canvas.height, GS.camera.y));
+  GS.camera.x = Math.max(0, Math.min(z.w*T-CFG.VIEW_W, GS.camera.x));
+  GS.camera.y = Math.max(0, Math.min(z.h*T-CFG.VIEW_H, GS.camera.y));
   // Screen shake
   if(GS.screenShake > 0){
     GS.camera.x += (Math.random()-0.5)*GS.screenShake;
@@ -1798,7 +1785,7 @@ function renderNotifications(){
     CTX.fillStyle = 'rgba(255,245,250,0.92)';
     CTX.font = '13px sans-serif';
     const tw = CTX.measureText(n.text).width;
-    const nx = canvas.width/2 - tw/2 - 10;
+    const nx = CFG.VIEW_W/2 - tw/2 - 10;
     const ny = 60 + i*30;
     CTX.fillRect(nx, ny, tw+20, 24);
     CTX.strokeStyle = 'rgba(200,150,180,0.5)';
@@ -1806,7 +1793,7 @@ function renderNotifications(){
     CTX.strokeRect(nx, ny, tw+20, 24);
     CTX.fillStyle = '#805070';
     CTX.textAlign = 'center';
-    CTX.fillText(n.text, canvas.width/2, ny+16);
+    CTX.fillText(n.text, CFG.VIEW_W/2, ny+16);
     CTX.textAlign = 'left';
     CTX.globalAlpha = 1;
   }
@@ -1895,10 +1882,10 @@ function renderHUD(){
   CTX.fillStyle = 'rgba(255,245,250,0.75)';
   CTX.font = '11px sans-serif';
   const znw = CTX.measureText('✿ '+zoneName).width;
-  CTX.fillRect(canvas.width-znw-20, 10, znw+14, 22);
+  CTX.fillRect(CFG.VIEW_W-znw-20, 10, znw+14, 22);
   CTX.fillStyle = '#906080';
   CTX.textAlign = 'right';
-  CTX.fillText('✿ '+zoneName, canvas.width-13, 26);
+  CTX.fillText('✿ '+zoneName, CFG.VIEW_W-13, 26);
   CTX.textAlign = 'left';
   // Interaction hint
   if(!GS.dialogue.active){
@@ -1907,10 +1894,10 @@ function renderHUD(){
       CTX.fillStyle = 'rgba(255,245,250,0.88)';
       CTX.font = '12px sans-serif';
       const hw = CTX.measureText(hint).width;
-      CTX.fillRect(canvas.width/2-hw/2-8, canvas.height-50, hw+16, 22);
+      CTX.fillRect(CFG.VIEW_W/2-hw/2-8, CFG.VIEW_H-50, hw+16, 22);
       CTX.fillStyle = '#805070';
       CTX.textAlign = 'center';
-      CTX.fillText(hint, canvas.width/2, canvas.height-34);
+      CTX.fillText(hint, CFG.VIEW_W/2, CFG.VIEW_H-34);
       CTX.textAlign = 'left';
     }
     if(GS.player.nearItem){
@@ -1918,10 +1905,10 @@ function renderHUD(){
       CTX.fillStyle = 'rgba(255,245,250,0.88)';
       CTX.font = '12px sans-serif';
       const hw = CTX.measureText(hint).width;
-      CTX.fillRect(canvas.width/2-hw/2-8, canvas.height-50, hw+16, 22);
+      CTX.fillRect(CFG.VIEW_W/2-hw/2-8, CFG.VIEW_H-50, hw+16, 22);
       CTX.fillStyle = '#805070';
       CTX.textAlign = 'center';
-      CTX.fillText(hint, canvas.width/2, canvas.height-34);
+      CTX.fillText(hint, CFG.VIEW_W/2, CFG.VIEW_H-34);
       CTX.textAlign = 'left';
     }
   }
@@ -1936,8 +1923,8 @@ function renderMinimap(){
   const z = ZONES[GS.currentZone];
   if(!z) return;
   const mmW = 100, mmH = 75;
-  const mx = canvas.width - mmW - 10;
-  const my = canvas.height - mmH - 10;
+  const mx = CFG.VIEW_W - mmW - 10;
+  const my = CFG.VIEW_H - mmH - 10;
   // Background
   CTX.fillStyle = 'rgba(255,245,250,0.8)';
   CTX.fillRect(mx-2, my-2, mmW+4, mmH+4);
@@ -2043,22 +2030,22 @@ function renderPostProcessing(){
   if(!z) return;
   // Ambient color overlay (warm pastel tint)
   CTX.fillStyle = z.ambientColor || 'rgba(240,200,220,0.06)';
-  CTX.fillRect(0,0,canvas.width,canvas.height);
+  CTX.fillRect(0,0,CFG.VIEW_W,CFG.VIEW_H);
   CTX.globalAlpha = 1;
   // Soft vignette
   const vGrad = CTX.createRadialGradient(
-    canvas.width/2,canvas.height/2, canvas.width*0.3,
-    canvas.width/2,canvas.height/2, canvas.width*0.75
+    CFG.VIEW_W/2,CFG.VIEW_H/2, CFG.VIEW_W*0.3,
+    CFG.VIEW_W/2,CFG.VIEW_H/2, CFG.VIEW_W*0.75
   );
   vGrad.addColorStop(0,'rgba(0,0,0,0)');
   vGrad.addColorStop(1,'rgba(80,50,70,0.12)');
   CTX.fillStyle = vGrad;
-  CTX.fillRect(0,0,canvas.width,canvas.height);
+  CTX.fillRect(0,0,CFG.VIEW_W,CFG.VIEW_H);
   // Zone fog
   if(z.fogColor){
     CTX.globalAlpha = 0.06;
     CTX.fillStyle = z.fogColor;
-    CTX.fillRect(0,0,canvas.width,canvas.height);
+    CTX.fillRect(0,0,CFG.VIEW_W,CFG.VIEW_H);
     CTX.globalAlpha = 1;
   }
 }
@@ -2069,8 +2056,8 @@ function updateParticles(dt){
   if(zp){
     // Spawn ambient particles
     if(Math.random() < zp.rate*dt){
-      const px = GS.camera.x + Math.random()*canvas.width;
-      const py = GS.camera.y + Math.random()*canvas.height;
+      const px = GS.camera.x + Math.random()*CFG.VIEW_W;
+      const py = GS.camera.y + Math.random()*CFG.VIEW_H;
       GS.particles.push({
         x:px, y:py,
         vx:(Math.random()-0.5)*zp.speed,
@@ -2104,7 +2091,7 @@ function renderParticles(camX, camY){
   for(const p of GS.particles){
     const sx = p.x - camX;
     const sy = p.y - camY;
-    if(sx<-20||sx>canvas.width+20||sy<-20||sy>canvas.height+20) continue;
+    if(sx<-20||sx>CFG.VIEW_W+20||sy<-20||sy>CFG.VIEW_H+20) continue;
     CTX.globalAlpha = p.life * 0.6;
     CTX.fillStyle = p.color;
     CTX.beginPath();
@@ -2153,21 +2140,21 @@ function renderEnding(){
     const flash = Math.min(1, t/1.5);
     CTX.globalAlpha = flash;
     CTX.fillStyle = '#fff8f0';
-    CTX.fillRect(0,0,canvas.width,canvas.height);
+    CTX.fillRect(0,0,CFG.VIEW_W,CFG.VIEW_H);
     CTX.globalAlpha = 1;
   }
   if(GS.endingPhase >= 1){
     // Background
-    const grad = CTX.createLinearGradient(0,0,0,canvas.height);
+    const grad = CTX.createLinearGradient(0,0,0,CFG.VIEW_H);
     grad.addColorStop(0,'#e8c8e0');
     grad.addColorStop(0.5,'#f0d8e8');
     grad.addColorStop(1,'#f8e8d0');
     CTX.fillStyle = grad;
-    CTX.fillRect(0,0,canvas.width,canvas.height);
+    CTX.fillRect(0,0,CFG.VIEW_W,CFG.VIEW_H);
     // Floating particles
     for(let i=0;i<20;i++){
-      const px = (i*79+t*20+i*i*13)%canvas.width;
-      const py = canvas.height - ((t-2)*40+i*30)%canvas.height;
+      const px = (i*79+t*20+i*i*13)%CFG.VIEW_W;
+      const py = CFG.VIEW_H - ((t-2)*40+i*30)%CFG.VIEW_H;
       CTX.globalAlpha = 0.3;
       CTX.fillStyle = ['#f0c0d8','#d0b0e8','#f0d8a0','#c8e0f0'][i%4];
       CTX.beginPath(); CTX.arc(px,py,3+Math.sin(t+i)*2,0,Math.PI*2); CTX.fill();
@@ -2180,20 +2167,20 @@ function renderEnding(){
       CTX.globalAlpha = alpha;
       CTX.fillStyle = '#805070';
       CTX.font = 'bold 24px sans-serif';
-      CTX.fillText('✦ The Star Anchor is Restored! ✦', canvas.width/2, canvas.height/2-40);
+      CTX.fillText('✦ The Star Anchor is Restored! ✦', CFG.VIEW_W/2, CFG.VIEW_H/2-40);
       CTX.font = '14px sans-serif';
       CTX.fillStyle = '#906880';
-      CTX.fillText('The island glows with renewed starlight...', canvas.width/2, canvas.height/2);
-      CTX.fillText('The crystals sing in harmony once more.', canvas.width/2, canvas.height/2+25);
+      CTX.fillText('The island glows with renewed starlight...', CFG.VIEW_W/2, CFG.VIEW_H/2);
+      CTX.fillText('The crystals sing in harmony once more.', CFG.VIEW_W/2, CFG.VIEW_H/2+25);
       CTX.globalAlpha = 1;
     }
     if(GS.endingPhase === 2){
       CTX.fillStyle = '#805070';
       CTX.font = 'bold 20px sans-serif';
-      CTX.fillText('✿ Thank you for playing! ✿', canvas.width/2, canvas.height/2-60);
+      CTX.fillText('✿ Thank you for playing! ✿', CFG.VIEW_W/2, CFG.VIEW_H/2-60);
       CTX.font = '14px sans-serif';
       CTX.fillStyle = '#906880';
-      CTX.fillText('Starfall Shores', canvas.width/2, canvas.height/2-20);
+      CTX.fillText('Starfall Shores', CFG.VIEW_W/2, CFG.VIEW_H/2-20);
       CTX.font = '12px sans-serif';
       const credits = [
         'A whimsical island adventure',
@@ -2205,10 +2192,10 @@ function renderEnding(){
         '✿ The End ✿'
       ];
       credits.forEach((line,i)=>{
-        const cy = canvas.height/2+10+i*20;
+        const cy = CFG.VIEW_H/2+10+i*20;
         const ca = Math.max(0, Math.min(1, (t-8-i*0.3)/1));
         CTX.globalAlpha = ca;
-        CTX.fillText(line, canvas.width/2, cy);
+        CTX.fillText(line, CFG.VIEW_W/2, cy);
       });
       CTX.globalAlpha = 1;
     }
@@ -2278,7 +2265,7 @@ function gameLoop(timestamp){
     if(GS.transitioning){
       CTX.globalAlpha = GS.transitionAlpha;
       CTX.fillStyle = '#f5e6f0';
-      CTX.fillRect(0,0,canvas.width,canvas.height);
+      CTX.fillRect(0,0,CFG.VIEW_W,CFG.VIEW_H);
       CTX.globalAlpha = 1;
     }
     // Ending overlay
@@ -2287,7 +2274,7 @@ function gameLoop(timestamp){
     if(GS.screenFlash > 0){
       CTX.globalAlpha = GS.screenFlash;
       CTX.fillStyle = '#fff8f0';
-      CTX.fillRect(0,0,canvas.width,canvas.height);
+      CTX.fillRect(0,0,CFG.VIEW_W,CFG.VIEW_H);
       CTX.globalAlpha = 1;
       GS.screenFlash *= 0.92;
       if(GS.screenFlash < 0.01) GS.screenFlash = 0;
@@ -2353,8 +2340,8 @@ function startGame(){
   GS.player.x = ZONES.beach.spawnX;
   GS.player.y = ZONES.beach.spawnY;
   GS.currentZone = 'beach';
-  GS.camera.x = GS.player.x - canvas.width/2;
-  GS.camera.y = GS.player.y - canvas.height/2;
+  GS.camera.x = GS.player.x - CFG.VIEW_W/2;
+  GS.camera.y = GS.player.y - CFG.VIEW_H/2;
   // Init quests
   GS.quests = {active:[], completed:[]};
   GS.crystalsFound = 0;
@@ -2414,19 +2401,18 @@ canvas.addEventListener('click', e=>{
 
 // ── Resize Handler ───────────────────────────────────────
 function resizeCanvas(){
-  const maxW = window.innerWidth;
-  const maxH = window.innerHeight;
-  const aspect = 16/10;
-  let w = maxW;
-  let h = w / aspect;
-  if(h > maxH){
-    h = maxH;
-    w = h * aspect;
-  }
-  canvas.width = Math.min(800, Math.floor(w));
-  canvas.height = Math.min(500, Math.floor(h));
-  canvas.style.width = w+'px';
-  canvas.style.height = h+'px';
+  const dpr = window.devicePixelRatio || 1;
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  canvas.width = Math.round(w * dpr);
+  canvas.height = Math.round(h * dpr);
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  CFG.VIEW_W = w;
+  CFG.VIEW_H = h;
+  CFG.DPR = dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.imageSmoothingEnabled = false;
 }
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
