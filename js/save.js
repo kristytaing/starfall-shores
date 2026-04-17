@@ -151,4 +151,6 @@ function placeQuestItems(){
   ZONES.caves.items.push({id:'crystal_lens',x:15*T,y:20*T,item:'Crystal Lens',icon:'🔮',taken:false});
   // Sturdy Pickaxe in beach
   ZONES.beach.items.push({id:'sturdy_pickaxe',x:25*T,y:20*T,item:'Sturdy Pickaxe',icon:'⛏️',taken:false});
+  // Beacon Shard for Barnaby's lighthouse quest — in tide pools
+  ZONES.beach.items.push({id:'beacon_shard',x:18*T,y:22*T,item:'Beacon Shard',icon:'💎',taken:false});
 }

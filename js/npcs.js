@@ -6,6 +6,8 @@ const NPC_DATA = {
     greeting: "Ahoy there, young one! I'm Barnaby, the old lighthouse keeper.",
     dialogues: [
       {text:"The Starfall Crystals... they fell from the sky when the Star Anchor shattered. Five pieces, scattered across the island.", quest:'main'},
+      {text:"The lighthouse needs a Beacon Shard to function. I think one washed up in the tide pools to the south. Could you find it?", quest:'barnaby_beacon', need:'Beacon Shard'},
+      {text:"You found the Beacon Shard! Bless you! Here — take this old Lantern. It'll light your way in the dark caves.", reward:'Cave Lantern', quest:'barnaby_beacon'},
       {text:"The beach crystal washed ashore near the tide pools. Be careful of the waves!", hint:'beach'},
       {text:"You remind me of the old adventurers who used to visit. They had that same spark in their eyes.", idle:true},
       {text:"The lighthouse hasn't shone properly since the Star Anchor broke. The whole island feels dimmer.", idle:true}
@@ -215,6 +217,7 @@ function isSolid(zone, tx, ty){
   if(!z) return true;
   if(tx<0||ty<0||tx>=z.w||ty>=z.h) return true;
   const tid = z.tiles[ty]?z.tiles[ty][tx]:0;
+  if(tid===1 && GS.coralCharmActive) return false; // coral charm allows shallow water
   return tid===1; // only water/ocean tiles block movement
 }
 
@@ -336,6 +339,15 @@ function updateTransition(dt){
       GS.camera.x = t.x - CFG.VIEW_W/2;
       GS.camera.y = t.y - CFG.VIEW_H/2;
       GS.transitionPhase = 'in';
+      // Play zone-entry chime
+      if(G.audioCtx && G.soundOn){
+        const ZONE_CHIMES = {
+          beach:[523,659],village:[587,740],forest:[466,587],
+          caves:[311,392],summit:[698,880],ruins:[415,523]
+        };
+        const chime = ZONE_CHIMES[t.zone]||[523,659];
+        chime.forEach((n,i)=>setTimeout(()=>Audio.playNote(n,0.5,'sine',0.08,G.musicGain),i*180));
+      }
       // Show zone name card using #zone-label div
       const zoneName = ZONES[t.zone]?.name || (t.zone.charAt(0).toUpperCase()+t.zone.slice(1));
       const zlEl = document.getElementById('zone-label');

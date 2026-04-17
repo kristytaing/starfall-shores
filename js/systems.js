@@ -150,10 +150,6 @@ function renderLighthouseGlow(camX, camY) {
   }
 }
 
-// ── Coral Charm: shallow water passability ───────────────────
-// Patch checkCollision to skip shallow water if charm active
-const _origCheckCollision = typeof checkCollision === 'function' ? checkCollision : null;
-
 // ── Environmental Hazards ────────────────────────────────────
 
 // Beach tide push: if player on water tile (tid=1) and no coral charm
@@ -199,31 +195,48 @@ function applySummitWind(dt) {
 }
 
 // ── Quest World Items ────────────────────────────────────────
-// Place fetch-quest items physically in the world (not in thin air)
+// Place special item rewards in the world (companion items for NPCs)
 function placeQuestWorldItems() {
   const T = CFG.TILE;
-  // Shell Necklace — hidden in village behind Pip's house
-  if (ZONES.village) {
-    ZONES.village.items.push({
-      id: 'shell_necklace', x: 9 * T + 8, y: 23 * T + 8,
-      item: 'Shell Necklace', icon: '🐚', taken: false,
-      hint: 'A shell necklace half-buried in the sand near the eastern path'
-    });
-    // Forest Map — already placed by placeQuestItems, but also add a hint sign
-    // Sturdy Pickaxe — in village general store chest area
-    ZONES.village.items.push({
-      id: 'sturdy_pickaxe', x: 34 * T + 8, y: 7 * T + 8,
-      item: 'Sturdy Pickaxe', icon: '⛏️', taken: false,
-      hint: 'A pickaxe leaning against the general store wall'
-    });
-    // Crystal Lens — on beach near tide pools
+  // Lucky Compass — reward from Pip after first meeting (placed in forest)
+  if (ZONES.forest) {
+    if (!ZONES.forest.items.find(i => i.id === 'lucky_compass')) {
+      ZONES.forest.items.push({
+        id: 'lucky_compass', x: 18 * T + 8, y: 8 * T + 8,
+        item: 'Lucky Compass', icon: '🧭', taken: false,
+        hint: "Pip's old compass, left at the forest clearing"
+      });
+    }
   }
+  // Cave Lantern — hidden in cave alcove
+  if (ZONES.caves) {
+    if (!ZONES.caves.items.find(i => i.id === 'cave_lantern')) {
+      ZONES.caves.items.push({
+        id: 'cave_lantern', x: 10 * T + 8, y: 10 * T + 8,
+        item: 'Cave Lantern', icon: '🏮', taken: false,
+        hint: 'An old lantern left by a previous explorer'
+      });
+    }
+  }
+  // Coral Charm — on the beach near the tide pools
   if (ZONES.beach) {
-    ZONES.beach.items.push({
-      id: 'crystal_lens', x: 28 * T + 8, y: 12 * T + 8,
-      item: 'Crystal Lens', icon: '🔮', taken: false,
-      hint: 'A gleaming lens caught in the tide pool rocks'
-    });
+    if (!ZONES.beach.items.find(i => i.id === 'coral_charm')) {
+      ZONES.beach.items.push({
+        id: 'coral_charm', x: 22 * T + 8, y: 18 * T + 8,
+        item: 'Coral Charm', icon: '🐚', taken: false,
+        hint: 'A charm woven from sea coral, grants water-walking'
+      });
+    }
+  }
+  // Shadow Cloak — in the summit ruins
+  if (ZONES.summit) {
+    if (!ZONES.summit.items.find(i => i.id === 'shadow_cloak')) {
+      ZONES.summit.items.push({
+        id: 'shadow_cloak', x: 15 * T + 8, y: 6 * T + 8,
+        item: 'Shadow Cloak', icon: '🧣', taken: false,
+        hint: 'A tattered cloak imbued with shadow magic'
+      });
+    }
   }
 }
 

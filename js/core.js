@@ -115,9 +115,24 @@ const Audio = {
     [130.81,196,261.63].forEach(f=>{const o=ac.createOscillator();o.type='sine';o.frequency.value=f;
       const g=ac.createGain();g.gain.value=0.015;o.connect(g);g.connect(G.musicGain);o.start();
       this.ambientNodes.push(o,g);});
-    this.melodyInterval=setInterval(()=>{if(!G.soundOn||G.state==='title')return;
-      const s=[261.63,293.66,329.63,392,440,523.25,587.33,659.25];
-      this.playNote(s[rngInt(0,s.length-1)],rng(0.5,1.5),'sine',0.035,G.musicGain);
+    // Zone-aware melody: different scales per zone
+    const ZONE_SCALES = {
+      beach:   [261.63,293.66,329.63,392,440,523.25,587.33,659.25],
+      village: [293.66,329.63,369.99,440,493.88,587.33,659.25,739.99],
+      forest:  [261.63,293.66,311.13,369.99,415.30,466.16,523.25],
+      caves:   [220,246.94,261.63,293.66,311.13,349.23],
+      summit:  [349.23,392,440,493.88,523.25,587.33,659.25,698.46],
+      ruins:   [246.94,277.18,311.13,369.99,415.30,493.88],
+    };
+    this.melodyInterval=setInterval(()=>{
+      if(!G.soundOn||G.state==='title')return;
+      const zone = G.currentZone||'beach';
+      const s = ZONE_SCALES[zone] || ZONE_SCALES.beach;
+      const isCave = zone==='caves';
+      const gain = isCave ? 0.025 : 0.035;
+      const dur = isCave ? rng(0.8,2.5) : rng(0.5,1.5);
+      const waveType = (zone==='forest'||zone==='ruins') ? 'triangle' : 'sine';
+      this.playNote(s[rngInt(0,s.length-1)],dur,waveType,gain,G.musicGain);
     },rng(3000,6000));
   },
   stopAmbience(){this.ambientNodes.forEach(n=>{try{n.stop?.();n.disconnect()}catch(e){}});

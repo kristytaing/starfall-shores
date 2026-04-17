@@ -234,6 +234,7 @@ function gameLoop(timestamp){
     updateNPCWander(dt);
     updateAmbientLife(dt);
     if(typeof updateSystems === 'function') updateSystems(dt);
+    if(typeof updateTutorial === 'function') updateTutorial(dt);
     // Render
     renderWorld();
     // Sort and render objects, items, NPCs, player by Y
@@ -295,6 +296,7 @@ function gameLoop(timestamp){
     renderHUD();
     renderMinimap();
     renderNotifications();
+    if(typeof renderTutorialHint === 'function') renderTutorialHint();
     // Transition overlay
     if(GS.transitioning){
       CTX.globalAlpha = GS.transitionAlpha;

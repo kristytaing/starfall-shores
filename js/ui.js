@@ -19,6 +19,14 @@ function updateNotifications(dt){
       GS.notifications.splice(i,1);
     }
   }
+  // Update floating texts with real dt
+  GS.floatingTexts = GS.floatingTexts || [];
+  for(let i=GS.floatingTexts.length-1;i>=0;i--){
+    const ft = GS.floatingTexts[i];
+    ft.life -= dt;
+    ft.y -= 30 * dt; // float upward at 30px/s
+    if(ft.life <= 0) GS.floatingTexts.splice(i,1);
+  }
 }
 
 function renderNotifications(){
@@ -40,24 +48,75 @@ function renderNotifications(){
     CTX.textAlign = 'left';
     CTX.globalAlpha = 1;
   }
-  // Floating pickup texts
-  GS.floatingTexts = GS.floatingTexts||[];
-  for(let i=GS.floatingTexts.length-1;i>=0;i--){
+  // Floating pickup texts (updated in updateNotifications)
+  GS.floatingTexts = GS.floatingTexts || [];
+  for(let i=0; i<GS.floatingTexts.length; i++){
     const ft = GS.floatingTexts[i];
-    ft.life -= 0.016;
-    ft.y -= 0.5;
-    if(ft.life<=0){GS.floatingTexts.splice(i,1);continue;}
-    const a = Math.min(1, ft.life/ft.maxLife*2);
+    const a = Math.min(1, ft.life / ft.maxLife * 2);
+    const sx = ft.x - GS.camera.x;
+    const sy = ft.y - GS.camera.y;
+    CTX.save();
     CTX.globalAlpha = a;
     CTX.font = 'bold 14px sans-serif';
     CTX.textAlign = 'center';
-    CTX.fillStyle = '#3D2B5E';
-    const sx = ft.x - GS.camera.x;
-    const sy = ft.y - GS.camera.y;
+    // Shadow for readability
+    CTX.fillStyle = 'rgba(0,0,0,0.4)';
+    CTX.fillText(ft.text, sx+1, sy+1);
+    CTX.fillStyle = ft.crystal ? '#e8c0ff' : '#fff8e8';
     CTX.fillText(ft.text, sx, sy);
-    CTX.textAlign = 'left';
-    CTX.globalAlpha = 1;
+    CTX.restore();
   }
+}
+
+// ── Tutorial Hints ───────────────────────────────────────
+const TUTORIAL_HINTS = [
+  { id:'move',    text:'Use Arrow Keys or WASD to move',          trigger: gs => !gs._tutMove,    flag:'_tutMove',    delay:2  },
+  { id:'talk',    text:'Walk up to characters and press E to talk', trigger: gs => gs._tutMove && !gs._tutTalk, flag:'_tutTalk', delay:4 },
+  { id:'map',     text:'Press M or tap 🗺️ to open the fast-travel map', trigger: gs => gs._tutTalk && !gs._tutMap, flag:'_tutMap', delay:6 },
+  { id:'inv',     text:'Press I or tap 🎒 to check your inventory', trigger: gs => gs._tutMap && !gs._tutInv, flag:'_tutInv', delay:8 },
+  { id:'crystal', text:'Find the 5 Starfall Crystals to restore the island!', trigger: gs => gs._tutInv && !gs._tutCrystal, flag:'_tutCrystal', delay:10 },
+];
+let _tutTimer = 0;
+function updateTutorial(dt){
+  if(GS.dialogue && GS.dialogue.active) return;
+  if(GS.ending) return;
+  _tutTimer += dt;
+  for(const hint of TUTORIAL_HINTS){
+    if(!GS[hint.flag] && _tutTimer >= hint.delay && hint.trigger(GS)){
+      GS[hint.flag] = true;
+      showTutorialHint(hint.text);
+      break;
+    }
+  }
+  // Mark movement as triggered once player moves
+  if(!GS._tutMove && (INPUT.left||INPUT.right||INPUT.up||INPUT.down||
+     (INPUT.joystick && INPUT.joystick.active))){
+    GS._tutMove = true;
+  }
+}
+let _tutHint = null;
+function showTutorialHint(text){
+  _tutHint = { text, life: 4, maxLife: 4 };
+}
+function renderTutorialHint(){
+  if(!_tutHint || _tutHint.life <= 0) return;
+  const a = Math.min(1, _tutHint.life / _tutHint.maxLife * 2.5);
+  const y = CFG.VIEW_H - 52;
+  const tw = CTX.measureText(_tutHint.text).width + 24;
+  const x = CFG.VIEW_W/2 - tw/2;
+  CTX.save();
+  CTX.globalAlpha = a * 0.9;
+  CTX.fillStyle = 'rgba(30,15,50,0.82)';
+  CTX.beginPath(); CTX.roundRect(x, y, tw, 28, 10); CTX.fill();
+  CTX.strokeStyle = 'rgba(180,140,220,0.6)';
+  CTX.lineWidth = 1;
+  CTX.beginPath(); CTX.roundRect(x, y, tw, 28, 10); CTX.stroke();
+  CTX.globalAlpha = a;
+  CTX.fillStyle = '#e8d8ff';
+  CTX.font = '12px sans-serif';
+  CTX.textAlign = 'center';
+  CTX.fillText(_tutHint.text, CFG.VIEW_W/2, y + 18);
+  CTX.restore();
 }
 
 // ── Part 8: UI Systems ───────────────────────────────────
