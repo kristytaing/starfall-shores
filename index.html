@@ -63,6 +63,7 @@ canvas#minimap{image-rendering:pixelated}
 <body>
 <div id="title-screen"><h1>✿ Starfall Shores ✿</h1><h2>An Island Adventure</h2><div class="instructions"><h3>HOW TO PLAY</h3>🚶 <span class="keys">WASD</span> or <span class="keys">Arrow Keys</span> to move<br>💬 <span class="keys">E</span> or <span class="keys">Space</span> to talk &amp; interact<br>🎒 <span class="keys">I</span> to open inventory<br>📜 <span class="keys">Q</span> to view quest log<br>🔊 <span class="keys">M</span> to toggle sound<br><br>🌟 <em>Explore the island, befriend the locals, and collect 5 Starfall Crystals to save the island!</em><br>📱 <em style="font-size:11px">Mobile: virtual joystick + ACT/BAG buttons</em></div><button id="start-btn" style="margin-top:10px;padding:14px 40px;background:rgba(245,234,213,0.2);border:2px solid rgba(245,234,213,0.5);border-radius:20px;color:#F5EAD5;font-size:16px;cursor:pointer;letter-spacing:2px;transition:all 0.3s;flex-shrink:0">✿ Set Sail ✿</button><div class="prompt" style="margin-top:12px">Click the button to begin</div></div>
 <canvas id="game"></canvas>
+<div id="game-error" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:red;color:white;padding:20px;border-radius:8px;z-index:9999;max-width:80%;font-size:12px;white-space:pre-wrap;"></div>
 <div id="grain-overlay"></div>
 <div id="ui">
 <div id="hud"></div>
@@ -2107,6 +2108,7 @@ function renderEnding(){
 // ── Part 10: Game Loop & Init ────────────────────────────
 let lastTime = 0;
 function gameLoop(timestamp){
+  try{
   const dt = Math.min(0.05, (timestamp - lastTime) / 1000);
   lastTime = timestamp;
   GS.time = timestamp;
@@ -2182,6 +2184,13 @@ function gameLoop(timestamp){
     }
   }
   requestAnimationFrame(gameLoop);
+  }catch(e){
+    console.error('GAMELOOP ERROR:', e.message, e.stack);
+    // Show error on screen
+    const el = document.getElementById('game-error');
+    if(el){ el.textContent = 'Error: '+e.message; el.style.display='block'; }
+    requestAnimationFrame(gameLoop);
+  }
 }
 
 function updateNPCWander(dt){
