@@ -287,12 +287,20 @@ function generateZones() {
   const bm = ZONES.beach;
   bm.tiles = Array.from({length:bm.h},()=>Array(bm.w).fill(2));
   for(let y=0;y<bm.h;y++) for(let x=0;x<bm.w;x++){
-    if(y<3||y>bm.h-3)bm.tiles[y][x]=1;
-    if(x<3)bm.tiles[y][x]=1;
-    if(x<5&&y<5)bm.tiles[y][x]=1;
-    if(x>bm.w-8)bm.tiles[y][x]=0;
-    if(x>bm.w-10&&x<=bm.w-8)bm.tiles[y][x]=Math.random()<0.5?0:2;
-    if(x>=30&&x<=32&&y>=8&&y<=14)bm.tiles[y][x]=8;
+    // Noise-based organic water border (top/left/corners)
+    const n1 = Math.sin(x*0.7+y*0.3)*0.5+Math.sin(x*0.3-y*0.8)*0.5;
+    const waterTop = 2 + Math.floor(n1*1.5+1.5);
+    const waterLeft = 2 + Math.floor(Math.sin(y*0.6)*1.5+1.5);
+    if(y < waterTop) bm.tiles[y][x]=1;
+    if(x < waterLeft) bm.tiles[y][x]=1;
+    if(x<5&&y<5) bm.tiles[y][x]=1;
+    // Wet sand strip (tide zone) — darker sand near water
+    if(y===waterTop && x>=waterLeft) bm.tiles[y][x]=11; // shallows = wet sand colour
+    // Organic grass/sand boundary on right
+    const grassEdge = bm.w-8 + Math.floor(Math.sin(y*0.5)*2);
+    if(x > grassEdge) bm.tiles[y][x]=0;
+    if(x === grassEdge && Math.sin(x*0.9+y*0.4)>0) bm.tiles[y][x]=Math.random()<0.5?0:2;
+    if(x>=30&&x<=32&&y>=8&&y<=14) bm.tiles[y][x]=8;
   }
   bm.objects.push(
     {x:8,y:10,type:'palm',w:2,h:3},{x:14,y:8,type:'palm',w:2,h:3},{x:22,y:18,type:'palm',w:2,h:3},
@@ -318,15 +326,44 @@ function generateZones() {
   };
   const vm = ZONES.village;
   vm.tiles = Array.from({length:vm.h},()=>Array(vm.w).fill(0));
-  for(let y=0;y<vm.h;y++) for(let x=0;x<vm.w;x++){
-    if((x>=18&&x<=21)||(y>=13&&y<=15&&x>=1&&x<=38))vm.tiles[y][x]=8;
-    if(dist(x,y,20,14)<3)vm.tiles[y][x]=1;
-    if(dist(x,y,20,14)<2)vm.tiles[y][x]=1;
-    if(Math.random()<0.08&&vm.tiles[y][x]===0)vm.tiles[y][x]=6;
-    if(y<1||y>=vm.h-1||x>=vm.w-1)vm.tiles[y][x]=4;
+  // Lay paths first
+  function vmPath(ax,ay,bx,by,w){
+    let cx=ax,cy=ay;
+    while(Math.abs(cx-bx)>0.5||Math.abs(cy-by)>0.5){
+      const dx=bx-cx,dy=by-cy;
+      if(Math.abs(dx)>Math.abs(dy)) cx+=dx<0?-1:1; else cy+=dy<0?-1:1;
+      for(let dy2=-w;dy2<=w;dy2++) for(let dx2=-w;dx2<=w;dx2++){
+        const tx=Math.round(cx+dx2),ty=Math.round(cy+dy2);
+        if(tx>=0&&tx<vm.w&&ty>=0&&ty<vm.h) vm.tiles[ty][tx]=8;
+      }
+    }
   }
+  vmPath(1,14,39,14,1);   // east-west main road
+  vmPath(20,1,20,29,1);   // north-south main road
+  vmPath(10,7,20,14,0);   // path from mayor's house
+  vmPath(10,22,20,14,0);  // path from pip's house
+  vmPath(32,7,20,14,0);   // path from general store
+  vmPath(32,22,20,14,0);  // path from luna's observatory
+  // Plaza cobblestone ring around fountain
   for(let y=0;y<vm.h;y++) for(let x=0;x<vm.w;x++){
-    if(vm.tiles[y][x]===8&&dist(x,y,20,14)<3)vm.tiles[y][x]=14;
+    if(dist(x,y,20,14)<4) vm.tiles[y][x]=14; // earth/cobble plaza
+    if(dist(x,y,20,14)<2.5) vm.tiles[y][x]=8; // paved centre
+  }
+  // Plaza lantern posts at 4 cardinal positions
+  vm.objects.push(
+    {x:20,y:10,type:'lamp_post',w:1,h:1},
+    {x:20,y:17,type:'lamp_post',w:1,h:1},
+    {x:17,y:14,type:'lamp_post',w:1,h:1},
+    {x:23,y:14,type:'lamp_post',w:1,h:1}
+  );
+  // Flower pots around plaza edge
+  [{x:18,y:11},{x:22,y:11},{x:18,y:16},{x:22,y:16},
+   {x:16,y:13},{x:24,y:13},{x:16,y:15},{x:24,y:15}].forEach(p=>
+    vm.objects.push({x:p.x,y:p.y,type:'flower_pot',w:1,h:1}));
+  // Scattered flowers
+  for(let y=0;y<vm.h;y++) for(let x=0;x<vm.w;x++){
+    if(vm.tiles[y][x]===0&&Math.random()<0.06) vm.tiles[y][x]=6;
+    if(y<1||y>=vm.h-1||x>=vm.w-1) vm.tiles[y][x]=4;
   }
   vm.objects.push(
     {x:6,y:5,type:'house',w:4,h:3,color:'#e8a0a0',roof:'#c87878',label:"Mayor's House"},
@@ -361,16 +398,30 @@ function generateZones() {
   };
   const fm = ZONES.forest;
   fm.tiles = Array.from({length:fm.h},()=>Array(fm.w).fill(0));
+  // Clearings: 3 open glades at fixed positions
+  const fClearings = [{cx:8,cy:8,r:4},{cx:24,cy:12,r:3.5},{cx:10,cy:26,r:4}];
   for(let y=0;y<fm.h;y++) for(let x=0;x<fm.w;x++){
-    if(Math.random()<0.25)fm.tiles[y][x]=4;
-    if(Math.random()<0.15)fm.tiles[y][x]=7;
+    // Noise-based density: denser toward edges, sparse in centre strips
+    const n1 = Math.sin(x*0.8+y*0.5)*0.5+Math.cos(x*0.4-y*0.7)*0.5;
+    const densityBias = 0.18 + 0.12 * n1;
+    if(Math.random()<densityBias+0.1) fm.tiles[y][x]=4;  // dark grass
+    if(Math.random()<densityBias*0.6) fm.tiles[y][x]=7;  // mossy
+    // Paths
     if((x>=14&&x<=16)&&y<=18)fm.tiles[y][x]=8;
     if((y>=16&&y<=18)&&x>=5&&x<=28)fm.tiles[y][x]=8;
     if((x>=26&&x<=28)&&y>=18&&y<=33)fm.tiles[y][x]=8;
+    // Ancient tree glade
     if(dist(x,y,15,17)<5)fm.tiles[y][x]=0;
-    if(dist(x,y,15,17)<3)fm.tiles[y][x]=6;
+    if(dist(x,y,15,17)<3)fm.tiles[y][x]=6;  // lush glade centre
+    // Stream
     if(Math.abs(x-(10+Math.sin(y*0.5)*3))<1&&y>10)fm.tiles[y][x]=1;
+    // Mushroom glade
     if(dist(x,y,8,28)<4)fm.tiles[y][x]=0;
+    // Open clearings — grass floor, flower-dotted
+    for(const cl of fClearings){
+      if(dist(x,y,cl.cx,cl.cy)<cl.r) fm.tiles[y][x]=6;
+      if(dist(x,y,cl.cx,cl.cy)<cl.r*0.55) fm.tiles[y][x]=0;
+    }
   }
   fm.objects.push({x:15,y:17,type:'ancient_tree',w:3,h:3},
     {x:5,y:10,type:'mushroom_big',w:1,h:1},{x:8,y:26,type:'mushroom_big',w:1,h:1},{x:30,y:30,type:'mushroom_big',w:1,h:1});
@@ -664,6 +715,32 @@ function renderTileDetail(tid, sx, sy, T, hash, zone){
     CTX.restore();
   }
 
+  // Shoreline foam on wet-sand/shallows tiles (tid===11)
+  if(tid===11){
+    CTX.save(); CTX.beginPath(); CTX.rect(sx,sy,T,T); CTX.clip();
+    // Wet surface reflection sheen (sky colour tint)
+    const reflGrad = CTX.createLinearGradient(sx,sy,sx,sy+T);
+    reflGrad.addColorStop(0,'rgba(160,200,220,0.18)');
+    reflGrad.addColorStop(1,'rgba(160,200,220,0.04)');
+    CTX.fillStyle=reflGrad; CTX.fillRect(sx,sy,T,T);
+    const foamPhase = GS.time*0.002;
+    for(let i=0;i<4;i++){
+      const fx = sx + (rng()*T);
+      const fy = sy + T*0.25 + Math.sin(foamPhase+fx*0.05+i)*5;
+      const fw = 5+rng()*10, fa = 0.28+Math.sin(foamPhase*1.3+i*2)*0.16;
+      CTX.globalAlpha = Math.max(0,fa);
+      CTX.fillStyle = '#ffffff';
+      CTX.beginPath(); CTX.ellipse(fx,fy,fw,2.2,0,0,Math.PI*2); CTX.fill();
+    }
+    // Specular highlight dots
+    for(let i=0;i<2;i++){
+      const hx=sx+rng()*T, hy=sy+rng()*T;
+      CTX.globalAlpha=0.12+Math.sin(GS.time*0.004+hx)*0.08;
+      CTX.fillStyle='#E8F4FF';
+      CTX.beginPath(); CTX.arc(hx,hy,1+rng()*1.5,0,Math.PI*2); CTX.fill();
+    }
+    CTX.globalAlpha=1; CTX.restore();
+  }
   // Water — smooth shimmer bands only, flat
   if(tid===1||tid===7||tid===11){
     CTX.save();
@@ -756,6 +833,39 @@ function renderTileDetail(tid, sx, sy, T, hash, zone){
     }
     CTX.restore();
   }
+
+  // Cave formations — stalactites from top, stalagmites from bottom on floor/wall boundary tiles
+  if(tid===10 && zone==='caves'){
+    CTX.save(); CTX.beginPath(); CTX.rect(sx,sy,T,T); CTX.clip();
+    // Stalactite (from ceiling — top of tile)
+    if(rng()<0.28){
+      const fx=sx+4+rng()*(T-8);
+      const fh=4+rng()*9;
+      const fw=2+rng()*2;
+      CTX.globalAlpha=0.55+rng()*0.2;
+      const stalGrad=CTX.createLinearGradient(fx,sy,fx,sy+fh);
+      stalGrad.addColorStop(0,'#5A4070'); stalGrad.addColorStop(1,'#3D2B5E');
+      CTX.fillStyle=stalGrad;
+      CTX.beginPath(); CTX.moveTo(fx-fw,sy); CTX.lineTo(fx+fw,sy); CTX.lineTo(fx,sy+fh); CTX.closePath(); CTX.fill();
+      // Crystal tip highlight
+      CTX.globalAlpha=0.3; CTX.fillStyle='#BBA8D9';
+      CTX.beginPath(); CTX.arc(fx,sy+fh-1,fw*0.5,0,Math.PI*2); CTX.fill();
+      CTX.globalAlpha=1;
+    }
+    // Stalagmite (from floor — bottom of tile)
+    if(rng()<0.22){
+      const fx=sx+4+rng()*(T-8);
+      const fh=3+rng()*7;
+      const fw=1.5+rng()*2;
+      CTX.globalAlpha=0.5+rng()*0.2;
+      const stagGrad=CTX.createLinearGradient(fx,sy+T,fx,sy+T-fh);
+      stagGrad.addColorStop(0,'#5A4070'); stagGrad.addColorStop(1,'#7A60A0');
+      CTX.fillStyle=stagGrad;
+      CTX.beginPath(); CTX.moveTo(fx-fw,sy+T); CTX.lineTo(fx+fw,sy+T); CTX.lineTo(fx,sy+T-fh); CTX.closePath(); CTX.fill();
+      CTX.globalAlpha=1;
+    }
+    CTX.restore();
+  }
 }
 
 
@@ -767,6 +877,16 @@ function renderObject(obj, camX, camY){
   const w = (obj.w||1)*T;
   const h = (obj.h||1)*T;
   const bob = Math.sin(GS.time*0.002 + obj.x*3)*2;
+  // Elevation shadow: cast a soft ground shadow for tall objects
+  if(obj.w>=1&&obj.h>=1&&obj.type!=='torch'&&obj.type!=='crystal_sm'){
+    const shadowAlpha = GS.currentZone==='summit'?0.22:GS.currentZone==='caves'?0.12:0.1;
+    const sw = w*0.8, sh = h*0.22;
+    const grad = CTX.createRadialGradient(x+w/2,y+h+2,0,x+w/2,y+h+2,sw*0.7);
+    grad.addColorStop(0,`rgba(0,0,0,${shadowAlpha})`);
+    grad.addColorStop(1,'rgba(0,0,0,0)');
+    CTX.fillStyle=grad;
+    CTX.beginPath(); CTX.ellipse(x+w/2, y+h+2, sw*0.5, sh, 0, 0, Math.PI*2); CTX.fill();
+  }
   switch(obj.type){
     case 'palm_tree':
       // Trunk
@@ -1101,6 +1221,54 @@ function renderObject(obj, camX, camY){
       CTX.beginPath(); CTX.moveTo(x+w*0.5,y+4); CTX.lineTo(x+w-4,y+h*0.6); CTX.lineTo(x+w*0.5,y+h-4); CTX.lineTo(x+4,y+h*0.6); CTX.closePath(); CTX.fill();
       CTX.globalAlpha=0.4; CTX.fillStyle='#fff'; CTX.beginPath(); CTX.moveTo(x+w*0.5,y+6); CTX.lineTo(x+w*0.65,y+h*0.4); CTX.lineTo(x+w*0.5,y+h*0.35); CTX.closePath(); CTX.fill(); CTX.globalAlpha=1;
       break;
+    case 'lamp_post':{
+      // Base
+      CTX.fillStyle='#8A7A60';
+      CTX.fillRect(x+w*0.42,y+h*0.55,w*0.16,h*0.45);
+      // Post
+      CTX.fillStyle='#6A6050';
+      CTX.fillRect(x+w*0.45,y+h*0.1,w*0.1,h*0.5);
+      // Lamp head
+      CTX.fillStyle='#D4B860';
+      CTX.beginPath(); CTX.arc(x+w*0.5,y+h*0.1,w*0.22,0,Math.PI*2); CTX.fill();
+      // Glow
+      const lpGlow=CTX.createRadialGradient(x+w*0.5,y+h*0.1,0,x+w*0.5,y+h*0.1,w*0.55);
+      const night=GS.dayTime>0.55||GS.dayTime<0.2;
+      lpGlow.addColorStop(0,night?'rgba(255,220,100,0.55)':'rgba(255,220,100,0.18)');
+      lpGlow.addColorStop(1,'rgba(255,220,100,0)');
+      CTX.fillStyle=lpGlow;
+      CTX.beginPath(); CTX.arc(x+w*0.5,y+h*0.1,w*0.55,0,Math.PI*2); CTX.fill();
+      break;
+    }
+    case 'flower_pot':{
+      // Pot body
+      CTX.fillStyle='#C0784A';
+      CTX.beginPath();
+      CTX.moveTo(x+w*0.2,y+h*0.9); CTX.lineTo(x+w*0.8,y+h*0.9);
+      CTX.lineTo(x+w*0.72,y+h*0.5); CTX.lineTo(x+w*0.28,y+h*0.5); CTX.closePath();
+      CTX.fill();
+      // Pot rim
+      CTX.fillStyle='#D08858';
+      CTX.fillRect(x+w*0.18,y+h*0.48,w*0.64,h*0.08);
+      // Soil
+      CTX.fillStyle='#6A4828';
+      CTX.beginPath(); CTX.ellipse(x+w*0.5,y+h*0.5,w*0.26,h*0.07,0,0,Math.PI*2); CTX.fill();
+      // Flowers
+      const fpColors=['#D48FA0','#F2C46D','#BBA8D9','#8FA8D6'];
+      for(let fi=0;fi<3;fi++){
+        const fc=fpColors[fi%fpColors.length];
+        const fsx=x+w*(0.28+fi*0.22), fsy=y+h*(0.3+Math.sin(fi)*0.05);
+        const fsh=h*0.22;
+        CTX.strokeStyle='#5A7A40'; CTX.lineWidth=1.5;
+        CTX.beginPath(); CTX.moveTo(fsx,y+h*0.5); CTX.lineTo(fsx,fsy+fsh); CTX.stroke();
+        CTX.fillStyle=fc; CTX.globalAlpha=0.9;
+        CTX.beginPath(); CTX.arc(fsx,fsy,w*0.12,0,Math.PI*2); CTX.fill();
+        CTX.fillStyle='#F5EAD5'; CTX.globalAlpha=1;
+        CTX.beginPath(); CTX.arc(fsx,fsy,w*0.05,0,Math.PI*2); CTX.fill();
+      }
+      CTX.globalAlpha=1;
+      break;
+    }
     default:
       // Generic fallback
       CTX.fillStyle = 'rgba(180,160,150,0.4)';
@@ -2607,6 +2775,27 @@ function gameLoop(timestamp){
     }
     renderParticles(GS.camera.x, GS.camera.y);
     renderAmbientLife(GS.camera.x, GS.camera.y);
+
+  // ── Summit altitude: wind-swept snow particles + edge fog ──
+  if(GS.currentZone==='summit'){
+    const snowCount = 38;
+    for(let i=0;i<snowCount;i++){
+      const t = GS.time*0.00035;
+      const sx2 = ((i*137.5 + t*60 + Math.sin(i*0.7)*40) % (CVS.width+20)) - 10;
+      const sy2 = ((i*73.1 + t*25 + Math.cos(i*0.4)*20) % (CVS.height+10));
+      const drift = Math.sin(t*1.2 + i*0.9)*8;
+      const alpha = 0.4 + Math.sin(t*2+i)*0.25;
+      const sr = 1 + (i%3)*0.5;
+      CTX.globalAlpha = Math.max(0,alpha);
+      CTX.fillStyle = '#E8EAF8';
+      CTX.beginPath(); CTX.arc(sx2+drift, sy2, sr, 0, Math.PI*2); CTX.fill();
+    }
+    CTX.globalAlpha=1;
+    const fogV = CTX.createRadialGradient(CVS.width/2,CVS.height/2,CVS.height*0.28,CVS.width/2,CVS.height/2,CVS.height*0.75);
+    fogV.addColorStop(0,'rgba(180,170,210,0)');
+    fogV.addColorStop(1,'rgba(180,170,210,0.22)');
+    CTX.fillStyle=fogV; CTX.fillRect(0,0,CVS.width,CVS.height);
+  }
     renderPostProcessing();
     renderHUD();
     renderMinimap();
