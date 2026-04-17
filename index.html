@@ -123,11 +123,6 @@ const ctx = canvas.getContext('2d');
 
 // ============ INPUT ============
 const keys = {}, keysJustPressed = {}, prevKeys = {};
-window.addEventListener('keydown', e => {
-  if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','KeyW','KeyA','KeyS','KeyD','KeyE','KeyI','KeyQ','KeyM','Escape','Enter'].includes(e.code)) e.preventDefault();
-  keys[e.code] = true;
-});
-window.addEventListener('keyup', e => { keys[e.code] = false; });
 function updateInput() { for (const k in keys) { keysJustPressed[k] = keys[k] && !prevKeys[k]; prevKeys[k] = keys[k]; } }
 function justPressed(code) { return keysJustPressed[code]; }
 
@@ -1731,7 +1726,7 @@ function renderQuestUI(){
 }
 
 // ── HUD ──────────────────────────────────────────────────
-function roundRect(ctx,x,y,w,h,r){
+function hudRoundRect(ctx,x,y,w,h,r){
   ctx.beginPath();
   ctx.moveTo(x+r,y);
   ctx.lineTo(x+w-r,y);
@@ -1755,11 +1750,11 @@ function renderHUD(){
   const hpW = maxHp * (heartSize + heartGap) - heartGap + heartPad*2;
   const hpH = 36;
   CTX.fillStyle = '#F5EAD5';
-  roundRect(CTX, 14, 12, hpW, hpH, 14);
+  hudRoundRect(CTX, 14, 12, hpW, hpH, 14);
   CTX.fill();
   CTX.strokeStyle = 'rgba(187,168,217,0.55)';
   CTX.lineWidth = 2;
-  roundRect(CTX, 14, 12, hpW, hpH, 14);
+  hudRoundRect(CTX, 14, 12, hpW, hpH, 14);
   CTX.stroke();
   for(let i=0;i<maxHp;i++){
     const hx = 14 + heartPad + i*(heartSize+heartGap) + heartSize/2;
@@ -1778,11 +1773,11 @@ function renderHUD(){
   const coinW = CTX.measureText(coinLabel).width + 48;
   const coinX = CFG.VIEW_W - coinW - 14;
   CTX.fillStyle = '#F5EAD5';
-  roundRect(CTX, coinX, 12, coinW, 36, 14);
+  hudRoundRect(CTX, coinX, 12, coinW, 36, 14);
   CTX.fill();
   CTX.strokeStyle = 'rgba(187,168,217,0.55)';
   CTX.lineWidth = 2;
-  roundRect(CTX, coinX, 12, coinW, 36, 14);
+  hudRoundRect(CTX, coinX, 12, coinW, 36, 14);
   CTX.stroke();
   // Coin icon
   CTX.font = '18px sans-serif';
@@ -1806,11 +1801,11 @@ function renderHUD(){
       CTX.font = '12px sans-serif';
       const hw = CTX.measureText(hint).width;
       CTX.fillStyle = '#F5EAD5';
-      roundRect(CTX, CFG.VIEW_W/2-hw/2-12, CFG.VIEW_H-52, hw+24, 26, 10);
+      hudRoundRect(CTX, CFG.VIEW_W/2-hw/2-12, CFG.VIEW_H-52, hw+24, 26, 10);
       CTX.fill();
       CTX.strokeStyle = 'rgba(187,168,217,0.45)';
       CTX.lineWidth = 1.5;
-      roundRect(CTX, CFG.VIEW_W/2-hw/2-12, CFG.VIEW_H-52, hw+24, 26, 10);
+      hudRoundRect(CTX, CFG.VIEW_W/2-hw/2-12, CFG.VIEW_H-52, hw+24, 26, 10);
       CTX.stroke();
       CTX.fillStyle = '#3D2B5E';
       CTX.textAlign = 'center';
@@ -2280,10 +2275,10 @@ function placeQuestItems(){
 
 // ── Input Handlers ───────────────────────────────────────
 document.addEventListener('keydown', e=>{
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','KeyW','KeyA','KeyS','KeyD','KeyE','KeyI','KeyQ','KeyM','Escape','Enter'].includes(e.code)) e.preventDefault();
   INPUT.keys[e.code] = true;
   INPUT.keys[e.key] = true;
   if(e.code==='Space'||e.code==='KeyE'){
-    e.preventDefault();
     interact();
   }
   if(e.code==='KeyI'){
