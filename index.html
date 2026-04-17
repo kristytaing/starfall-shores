@@ -602,6 +602,8 @@ function renderObject(obj, camX, camY){
       // Trunk
       CTX.fillStyle = '#c8a878';
       CTX.fillRect(x+w*0.4, y+h*0.3, w*0.2, h*0.7);
+      CTX.strokeStyle='rgba(140,100,60,0.25)';CTX.lineWidth=1.2;
+      CTX.strokeRect(x+w*0.4,y+h*0.3,w*0.2,h*0.7);
       // Trunk lines
       CTX.strokeStyle = 'rgba(160,120,80,0.3)';
       CTX.lineWidth = 1;
@@ -620,6 +622,8 @@ function renderObject(obj, camX, camY){
         CTX.beginPath();
         CTX.ellipse(0, -w*0.5, w*0.12, w*0.5, 0, 0, Math.PI*2);
         CTX.fill();
+        CTX.strokeStyle='rgba(60,110,50,0.2)';CTX.lineWidth=0.8;
+        CTX.beginPath();CTX.ellipse(0,-w*0.5,w*0.12,w*0.5,0,0,Math.PI*2);CTX.stroke();
         CTX.restore();
       }
       // Coconuts
@@ -631,6 +635,8 @@ function renderObject(obj, camX, camY){
       // Wall
       CTX.fillStyle = obj.color || '#e8b0b0';
       CTX.fillRect(x+4, y+h*0.35, w-8, h*0.65);
+      CTX.strokeStyle='rgba(0,0,0,0.12)';CTX.lineWidth=1.2;
+      CTX.strokeRect(x+4,y+h*0.35,w-8,h*0.65);
       // Wall texture
       CTX.strokeStyle = 'rgba(0,0,0,0.05)';
       CTX.lineWidth = 1;
@@ -645,6 +651,8 @@ function renderObject(obj, camX, camY){
       CTX.lineTo(x+w*0.5, y);
       CTX.lineTo(x+w, y+h*0.35);
       CTX.fill();
+      CTX.strokeStyle='rgba(0,0,0,0.14)';CTX.lineWidth=1.3;
+      CTX.beginPath();CTX.moveTo(x,y+h*0.35);CTX.lineTo(x+w*0.5,y);CTX.lineTo(x+w,y+h*0.35);CTX.closePath();CTX.stroke();
       // Door
       CTX.fillStyle = '#a07850';
       CTX.fillRect(x+w*0.38, y+h*0.55, w*0.24, h*0.45);
@@ -932,7 +940,7 @@ function renderItem(item, camX, camY){
   }
 }
 
-// ── Cute Girl Player (Canvas 2D) ─────────────────────────
+// ── Player Character (Canvas 2D) ─────────────────────────
 function renderPlayer(camX, camY){
   const p = GS.player;
   const x = p.x - camX;
@@ -941,7 +949,10 @@ function renderPlayer(camX, camY){
   const walking = p.walking;
   const frame = p.walkFrame;
   const bounce = walking ? Math.sin(frame*0.3)*2 : 0;
-  const lean = walking ? Math.sin(frame*0.3)*0.04*(dir===1?-1:dir===3?1:0) : 0;
+  const lean = walking ? Math.sin(frame*0.3)*0.035*(dir===1?-1:dir===3?1:0) : 0;
+  const skin = p.skin || '#E8C8A0';
+  const hair = p.hair || '#7a5030';
+  const faceDir = dir===1?-1:dir===3?1:0;
 
   CTX.save();
   CTX.translate(x+16, y+28+bounce);
@@ -950,188 +961,199 @@ function renderPlayer(camX, camY){
   // Shadow
   CTX.fillStyle = 'rgba(0,0,0,0.08)';
   CTX.beginPath();
-  CTX.ellipse(0, 10, 10, 4, 0, 0, Math.PI*2);
+  CTX.ellipse(0, 11, 10, 4, 0, 0, Math.PI*2);
   CTX.fill();
 
-  // ── Legs ──
-  const legSwing = walking ? Math.sin(frame*0.3)*4 : 0;
-  CTX.strokeStyle = p.skin;
-  CTX.lineWidth = 3.5;
+  // ── Legs (jeans/pants) ──
+  const legSwing = walking ? Math.sin(frame*0.3)*5 : 0;
+  const pantColor = p.pants || '#5878a0';
+  CTX.strokeStyle = pantColor;
+  CTX.lineWidth = 5;
   CTX.lineCap = 'round';
-  // Left leg
-  CTX.beginPath();
-  CTX.moveTo(-4, 4);
-  CTX.lineTo(-4+legSwing*0.5, 11);
-  CTX.stroke();
-  // Right leg
-  CTX.beginPath();
-  CTX.moveTo(4, 4);
-  CTX.lineTo(4-legSwing*0.5, 11);
-  CTX.stroke();
-  // Shoes
-  CTX.fillStyle = '#d89090';
-  CTX.beginPath(); CTX.ellipse(-4+legSwing*0.5, 12, 3.5, 2, 0, 0, Math.PI*2); CTX.fill();
-  CTX.beginPath(); CTX.ellipse(4-legSwing*0.5, 12, 3.5, 2, 0, 0, Math.PI*2); CTX.fill();
+  CTX.beginPath(); CTX.moveTo(-3.5,4); CTX.lineTo(-3.5+legSwing*0.5,12); CTX.stroke();
+  CTX.beginPath(); CTX.moveTo(3.5,4); CTX.lineTo(3.5-legSwing*0.5,12); CTX.stroke();
+  // Shoes — simple flat rounded
+  CTX.fillStyle = '#806050';
+  CTX.beginPath(); CTX.ellipse(-3.5+legSwing*0.5, 13, 4, 2.2, 0, 0, Math.PI*2); CTX.fill();
+  CTX.beginPath(); CTX.ellipse(3.5-legSwing*0.5, 13, 4, 2.2, 0, 0, Math.PI*2); CTX.fill();
+  // Shoe sole outline (hand-drawn)
+  CTX.strokeStyle = 'rgba(60,40,30,0.3)';
+  CTX.lineWidth = 0.8;
+  CTX.beginPath(); CTX.ellipse(-3.5+legSwing*0.5,13,4,2.2,0,0,Math.PI*2); CTX.stroke();
+  CTX.beginPath(); CTX.ellipse(3.5-legSwing*0.5,13,4,2.2,0,0,Math.PI*2); CTX.stroke();
 
-  // ── Body / Dress ──
-  const outfitColor = p.outfit || '#7BA7CC';
-  // Dress shape
-  CTX.fillStyle = outfitColor;
+  // ── Body (plain t-shirt) ──
+  const shirtColor = p.outfit || '#a8c4e0';
+  // T-shirt body — slightly boxy, hand-drawn feel
+  CTX.fillStyle = shirtColor;
   CTX.beginPath();
-  CTX.moveTo(-7, -2);
-  CTX.quadraticCurveTo(-9, 5, -7, 8);
-  CTX.lineTo(7, 8);
-  CTX.quadraticCurveTo(9, 5, 7, -2);
+  CTX.moveTo(-7,-2);
+  CTX.quadraticCurveTo(-8,2,-7.5,7);
+  CTX.lineTo(7.5,7);
+  CTX.quadraticCurveTo(8,2,7,-2);
   CTX.closePath();
   CTX.fill();
-  // Dress collar
-  CTX.fillStyle = 'rgba(255,255,255,0.4)';
+  // Shirt outline — thin pencil stroke
+  CTX.strokeStyle = 'rgba(0,0,0,0.12)';
+  CTX.lineWidth = 0.8;
   CTX.beginPath();
-  CTX.ellipse(0, -2, 5, 2, 0, 0, Math.PI*2);
+  CTX.moveTo(-7,-2);
+  CTX.quadraticCurveTo(-8,2,-7.5,7);
+  CTX.lineTo(7.5,7);
+  CTX.quadraticCurveTo(8,2,7,-2);
+  CTX.closePath();
+  CTX.stroke();
+  // Collar — simple round neck
+  CTX.fillStyle = skin;
+  CTX.beginPath();
+  CTX.ellipse(0,-2, 4, 2.5, 0, 0, Math.PI*2);
   CTX.fill();
 
   // ── Arms ──
-  const armSwing = walking ? Math.sin(frame*0.3)*3 : 0;
-  CTX.strokeStyle = p.skin;
-  CTX.lineWidth = 3;
-  // Left arm
-  CTX.beginPath();
-  CTX.moveTo(-7, 0);
-  CTX.lineTo(-10-armSwing*0.3, 6+Math.abs(armSwing)*0.3);
-  CTX.stroke();
-  // Right arm
-  CTX.beginPath();
-  CTX.moveTo(7, 0);
-  CTX.lineTo(10+armSwing*0.3, 6+Math.abs(armSwing)*0.3);
-  CTX.stroke();
+  const armSwing = walking ? Math.sin(frame*0.3)*4 : 0;
+  CTX.strokeStyle = shirtColor;
+  CTX.lineWidth = 5;
+  CTX.lineCap = 'round';
+  CTX.beginPath(); CTX.moveTo(-7,-0.5); CTX.lineTo(-11-armSwing*0.3, 6+Math.abs(armSwing)*0.3); CTX.stroke();
+  CTX.beginPath(); CTX.moveTo(7,-0.5); CTX.lineTo(11+armSwing*0.3, 6+Math.abs(armSwing)*0.3); CTX.stroke();
+  // Forearm skin
+  CTX.strokeStyle = skin;
+  CTX.lineWidth = 3.5;
+  CTX.beginPath(); CTX.moveTo(-10-armSwing*0.2,5); CTX.lineTo(-11-armSwing*0.3,6+Math.abs(armSwing)*0.3); CTX.stroke();
+  CTX.beginPath(); CTX.moveTo(10+armSwing*0.2,5); CTX.lineTo(11+armSwing*0.3,6+Math.abs(armSwing)*0.3); CTX.stroke();
   // Hands
-  CTX.fillStyle = p.skin;
-  CTX.beginPath(); CTX.arc(-10-armSwing*0.3, 7+Math.abs(armSwing)*0.3, 2, 0, Math.PI*2); CTX.fill();
-  CTX.beginPath(); CTX.arc(10+armSwing*0.3, 7+Math.abs(armSwing)*0.3, 2, 0, Math.PI*2); CTX.fill();
+  CTX.fillStyle = skin;
+  CTX.beginPath(); CTX.arc(-11-armSwing*0.3, 7+Math.abs(armSwing)*0.3, 2.5, 0, Math.PI*2); CTX.fill();
+  CTX.beginPath(); CTX.arc(11+armSwing*0.3, 7+Math.abs(armSwing)*0.3, 2.5, 0, Math.PI*2); CTX.fill();
 
-  // ── Head ──
-  // Neck
-  CTX.fillStyle = p.skin;
-  CTX.fillRect(-2, -7, 4, 5);
-  // Head circle
-  CTX.fillStyle = p.skin;
-  CTX.beginPath();
-  CTX.ellipse(0, -14, 10, 10.5, 0, 0, Math.PI*2);
-  CTX.fill();
+  // ── Head system: draw in correct z-order ──
+  // 1. Neck
+  CTX.fillStyle = skin;
+  CTX.fillRect(-2,-7,4,5);
 
-  // ── Hair ──
-  const hairColor = p.hair || '#8B5E3C';
-  // Back hair (behind head, long flowing)
-  CTX.fillStyle = hairColor;
-  // Long hair flowing down back
-  if(dir !== 2){ // Not facing up - show back hair
+  // 2. Back hair (behind head — only visible if long)
+  if(dir !== 2){
+    CTX.fillStyle = hair;
     CTX.beginPath();
-    CTX.moveTo(-8, -20);
-    CTX.quadraticCurveTo(-11, -8, -9+Math.sin(GS.time*0.003)*1.5, 6);
-    CTX.lineTo(-5, 8);
-    CTX.lineTo(5, 8);
-    CTX.lineTo(9-Math.sin(GS.time*0.003)*1.5, 6);
-    CTX.quadraticCurveTo(11, -8, 8, -20);
+    CTX.moveTo(-7,-22);
+    CTX.quadraticCurveTo(-10,-14,-9+Math.sin(GS.time*0.002)*1,4);
+    CTX.lineTo(-5,5);
+    CTX.lineTo(5,5);
+    CTX.lineTo(9-Math.sin(GS.time*0.002)*1,4);
+    CTX.quadraticCurveTo(10,-14,7,-22);
     CTX.closePath();
     CTX.fill();
+  } else {
+    // Facing up — show full back of head hair
+    CTX.fillStyle = hair;
+    CTX.beginPath();
+    CTX.moveTo(-9,-22);
+    CTX.quadraticCurveTo(-12,-14,-10+Math.sin(GS.time*0.002)*1,4);
+    CTX.lineTo(-5,5); CTX.lineTo(5,5); CTX.lineTo(10,4);
+    CTX.quadraticCurveTo(12,-14,9,-22);
+    CTX.closePath(); CTX.fill();
   }
-  // Top hair / bangs
-  CTX.fillStyle = hairColor;
-  CTX.beginPath();
-  CTX.ellipse(0, -17, 11, 8, 0, Math.PI, 0);
-  CTX.fill();
-  // Side bangs
-  CTX.beginPath();
-  CTX.moveTo(-10, -16);
-  CTX.quadraticCurveTo(-11.5, -10, -9, -7);
-  CTX.quadraticCurveTo(-8, -12, -7, -16);
-  CTX.fill();
-  CTX.beginPath();
-  CTX.moveTo(10, -16);
-  CTX.quadraticCurveTo(11.5, -10, 9, -7);
-  CTX.quadraticCurveTo(8, -12, 7, -16);
-  CTX.fill();
-  // Front bangs
-  CTX.beginPath();
-  CTX.moveTo(-6, -18);
-  CTX.quadraticCurveTo(-3, -11, 0, -12);
-  CTX.quadraticCurveTo(3, -11, 6, -18);
-  CTX.closePath();
-  CTX.fill();
-  // Hair ribbon bow
-  CTX.fillStyle = '#f0a0b8';
-  CTX.beginPath();
-  CTX.ellipse(-7, -20, 4, 2.5, -0.3, 0, Math.PI*2);
-  CTX.fill();
-  CTX.beginPath();
-  CTX.ellipse(-4, -20, 3, 2, 0.3, 0, Math.PI*2);
-  CTX.fill();
-  CTX.fillStyle = '#e08098';
-  CTX.beginPath(); CTX.arc(-5.5, -20, 1.5, 0, Math.PI*2); CTX.fill();
 
-  // ── Face ──
-  if(dir !== 2){ // Not facing away
-    const faceDir = dir===1?-1:dir===3?1:0;
-    // Eyes - big cute anime-style
-    const eyeSpacing = 4.5;
-    const blinkCycle = Math.floor(GS.time/3000)%60;
-    const isBlinking = blinkCycle === 0 && (GS.time%3000) < 120;
-    
+  // 3. Head circle — drawn on top of back hair
+  CTX.fillStyle = skin;
+  CTX.beginPath();
+  CTX.ellipse(0,-14, 10, 11, 0, 0, Math.PI*2);
+  CTX.fill();
+  // Subtle head outline
+  CTX.strokeStyle = 'rgba(0,0,0,0.1)';
+  CTX.lineWidth = 0.8;
+  CTX.beginPath();
+  CTX.ellipse(0,-14,10,11,0,0,Math.PI*2);
+  CTX.stroke();
+
+  // 4. Face (eyes, blush, mouth) — drawn before front hair
+  if(dir !== 2){
+    const blinkCycle = Math.floor(GS.time/4000)%80;
+    const isBlinking = blinkCycle === 0 && (GS.time%4000) < 110;
+    // Eyes — almond shaped, forward-looking
     for(let side=-1;side<=1;side+=2){
-      const ex = side*eyeSpacing + faceDir*1.5;
+      const ex = side*4.5 + faceDir*1.5;
       const ey = -14;
       if(isBlinking){
-        // Blink - cute closed eye line
-        CTX.strokeStyle = '#504050';
+        CTX.strokeStyle = '#404050';
         CTX.lineWidth = 1.5;
+        CTX.lineCap = 'round';
         CTX.beginPath();
-        CTX.arc(ex, ey, 3, 0.2, Math.PI-0.2);
+        CTX.arc(ex, ey, 3, 0.15, Math.PI-0.15);
         CTX.stroke();
       } else {
         // Eye white
         CTX.fillStyle = '#fff';
         CTX.beginPath();
-        CTX.ellipse(ex, ey, 3.8, 4, 0, 0, Math.PI*2);
+        CTX.ellipse(ex, ey, 3.5, 4, 0, 0, Math.PI*2);
         CTX.fill();
         // Iris
-        CTX.fillStyle = '#6878a8';
+        CTX.fillStyle = '#6070a0';
         CTX.beginPath();
         CTX.ellipse(ex+faceDir*0.8, ey+0.5, 2.5, 2.8, 0, 0, Math.PI*2);
         CTX.fill();
         // Pupil
-        CTX.fillStyle = '#303848';
+        CTX.fillStyle = '#282838';
         CTX.beginPath();
-        CTX.ellipse(ex+faceDir*0.8, ey+0.5, 1.5, 1.8, 0, 0, Math.PI*2);
+        CTX.ellipse(ex+faceDir*0.8, ey+0.5, 1.4, 1.7, 0, 0, Math.PI*2);
         CTX.fill();
         // Eye highlight
-        CTX.fillStyle = 'rgba(255,255,255,0.85)';
+        CTX.fillStyle = 'rgba(255,255,255,0.9)';
+        CTX.beginPath(); CTX.arc(ex+faceDir*0.5+1, ey-1.2, 1.1, 0, Math.PI*2); CTX.fill();
+        // Eyelid line — pencil stroke
+        CTX.strokeStyle = 'rgba(60,50,70,0.6)';
+        CTX.lineWidth = 0.9;
         CTX.beginPath();
-        CTX.arc(ex+faceDir*0.5+1, ey-1, 1.2, 0, Math.PI*2);
-        CTX.fill();
-        CTX.beginPath();
-        CTX.arc(ex+faceDir*0.5-0.5, ey+1.5, 0.6, 0, Math.PI*2);
-        CTX.fill();
-        // Bottom lash
-        CTX.strokeStyle = '#805878';
-        CTX.lineWidth = 0.5;
-        CTX.beginPath();
-        CTX.arc(ex, ey, 3.8, 0.3, Math.PI-0.3);
+        CTX.ellipse(ex, ey, 3.5, 4, 0, Math.PI, 0);
         CTX.stroke();
       }
     }
-    // Blush
-    CTX.fillStyle = 'rgba(240,160,160,0.2)';
-    CTX.beginPath(); CTX.ellipse(-5.5+faceDir, -11, 3, 1.5, 0, 0, Math.PI*2); CTX.fill();
-    CTX.beginPath(); CTX.ellipse(5.5+faceDir, -11, 3, 1.5, 0, 0, Math.PI*2); CTX.fill();
-    // Mouth
-    CTX.strokeStyle = '#c07888';
+    // Subtle blush
+    CTX.fillStyle = 'rgba(235,155,155,0.15)';
+    CTX.beginPath(); CTX.ellipse(-5.5+faceDir,-11,3,1.5,0,0,Math.PI*2); CTX.fill();
+    CTX.beginPath(); CTX.ellipse(5.5+faceDir,-11,3,1.5,0,0,Math.PI*2); CTX.fill();
+    // Mouth — neutral, slightly curved
+    CTX.strokeStyle = '#b07880';
     CTX.lineWidth = 1;
+    CTX.lineCap = 'round';
     CTX.beginPath();
-    CTX.arc(faceDir*1, -10, 2, 0.2, Math.PI-0.2);
+    CTX.arc(faceDir, -9.5, 2.2, 0.3, Math.PI-0.3);
     CTX.stroke();
-  } else {
-    // Back of head - show hair only, already rendered above
+    // Nose — tiny dot
+    CTX.fillStyle = 'rgba(0,0,0,0.12)';
+    CTX.beginPath(); CTX.arc(faceDir*0.5,-11.5,0.9,0,Math.PI*2); CTX.fill();
   }
+
+  // 5. Front hair / top — drawn LAST so it covers the forehead, NOT the eyes
+  CTX.fillStyle = hair;
+  // Top hair cap
+  CTX.beginPath();
+  CTX.ellipse(0,-18,10.5,7,0,Math.PI,0);
+  CTX.fill();
+  if(dir !== 2){
+    // Side pieces — tuck behind ears, stop above eye level
+    CTX.beginPath();
+    CTX.moveTo(-9,-18);
+    CTX.quadraticCurveTo(-11,-14,-10,-10);
+    CTX.quadraticCurveTo(-9,-14,-8,-18);
+    CTX.fill();
+    CTX.beginPath();
+    CTX.moveTo(9,-18);
+    CTX.quadraticCurveTo(11,-14,10,-10);
+    CTX.quadraticCurveTo(9,-14,8,-18);
+    CTX.fill();
+    // Front fringe — just covers forehead, ends well above eyes
+    CTX.beginPath();
+    CTX.moveTo(-8,-18);
+    CTX.quadraticCurveTo(-4,-13,0,-13.5);
+    CTX.quadraticCurveTo(4,-13,8,-18);
+    CTX.closePath();
+    CTX.fill();
+  }
+  // Hair pencil outline
+  CTX.strokeStyle = 'rgba(0,0,0,0.1)';
+  CTX.lineWidth = 0.7;
+  CTX.beginPath(); CTX.ellipse(0,-18,10.5,7,0,Math.PI,0); CTX.stroke();
 
   CTX.restore();
 }
@@ -1215,114 +1237,128 @@ function renderNPC(npc, camX, camY){
   const x = npc.x - camX;
   const y = npc.y - camY;
   const bob = npc.walking ? Math.sin(npc.walkFrame*0.3)*1.5 : 0;
-  
+  const dir = npc.dir || 0;
+  const faceDir = dir===1?-1:dir===3?1:0;
+
   CTX.save();
   CTX.translate(x+16, y+28+bob);
 
   // Shadow
   CTX.fillStyle = 'rgba(0,0,0,0.06)';
-  CTX.beginPath();
-  CTX.ellipse(0, 10, 9, 3.5, 0, 0, Math.PI*2);
-  CTX.fill();
+  CTX.beginPath(); CTX.ellipse(0,10,9,3.5,0,0,Math.PI*2); CTX.fill();
 
   // Legs
   const ls = npc.walking ? Math.sin(npc.walkFrame*0.25)*3 : 0;
   CTX.strokeStyle = data.skin;
-  CTX.lineWidth = 3;
+  CTX.lineWidth = 4;
   CTX.lineCap = 'round';
-  CTX.beginPath(); CTX.moveTo(-3,4); CTX.lineTo(-3+ls*0.4,10); CTX.stroke();
-  CTX.beginPath(); CTX.moveTo(3,4); CTX.lineTo(3-ls*0.4,10); CTX.stroke();
-  // Shoes
-  CTX.fillStyle = '#a09080';
-  CTX.beginPath(); CTX.ellipse(-3+ls*0.4,11,3,1.8,0,0,Math.PI*2); CTX.fill();
-  CTX.beginPath(); CTX.ellipse(3-ls*0.4,11,3,1.8,0,0,Math.PI*2); CTX.fill();
+  CTX.beginPath(); CTX.moveTo(-3,4); CTX.lineTo(-3+ls*0.4,11); CTX.stroke();
+  CTX.beginPath(); CTX.moveTo(3,4); CTX.lineTo(3-ls*0.4,11); CTX.stroke();
+  CTX.fillStyle = '#7a6055';
+  CTX.beginPath(); CTX.ellipse(-3+ls*0.4,12,3.5,2,0,0,Math.PI*2); CTX.fill();
+  CTX.beginPath(); CTX.ellipse(3-ls*0.4,12,3.5,2,0,0,Math.PI*2); CTX.fill();
 
   // Body
   CTX.fillStyle = data.outfit;
   CTX.beginPath();
-  CTX.moveTo(-6,-2); CTX.quadraticCurveTo(-8,4,-6,7);
-  CTX.lineTo(6,7); CTX.quadraticCurveTo(8,4,6,-2);
+  CTX.moveTo(-6.5,-2); CTX.quadraticCurveTo(-8,3,-7.5,7);
+  CTX.lineTo(7.5,7); CTX.quadraticCurveTo(8,3,6.5,-2);
   CTX.closePath(); CTX.fill();
+  CTX.strokeStyle='rgba(0,0,0,0.1)'; CTX.lineWidth=0.7;
+  CTX.beginPath(); CTX.moveTo(-6.5,-2); CTX.quadraticCurveTo(-8,3,-7.5,7);
+  CTX.lineTo(7.5,7); CTX.quadraticCurveTo(8,3,6.5,-2); CTX.closePath(); CTX.stroke();
 
   // Arms
-  CTX.strokeStyle = data.skin;
-  CTX.lineWidth = 2.5;
-  CTX.beginPath(); CTX.moveTo(-6,0); CTX.lineTo(-9,6); CTX.stroke();
-  CTX.beginPath(); CTX.moveTo(6,0); CTX.lineTo(9,6); CTX.stroke();
-
-  // Head
+  CTX.strokeStyle = data.outfit; CTX.lineWidth = 4.5;
+  CTX.beginPath(); CTX.moveTo(-6.5,0); CTX.lineTo(-9,6); CTX.stroke();
+  CTX.beginPath(); CTX.moveTo(6.5,0); CTX.lineTo(9,6); CTX.stroke();
+  CTX.strokeStyle = data.skin; CTX.lineWidth = 3;
+  CTX.beginPath(); CTX.moveTo(-9,5); CTX.lineTo(-10,7); CTX.stroke();
+  CTX.beginPath(); CTX.moveTo(9,5); CTX.lineTo(10,7); CTX.stroke();
   CTX.fillStyle = data.skin;
-  CTX.fillRect(-2,-7,4,5);
-  CTX.beginPath();
-  CTX.ellipse(0,-13,9,9.5,0,0,Math.PI*2);
-  CTX.fill();
+  CTX.beginPath(); CTX.arc(-10,7,2,0,Math.PI*2); CTX.fill();
+  CTX.beginPath(); CTX.arc(10,7,2,0,Math.PI*2); CTX.fill();
 
-  // Hair
+  // Neck
+  CTX.fillStyle = data.skin; CTX.fillRect(-2,-7,4,5);
+
+  // 1. Back hair — drawn before head
   CTX.fillStyle = data.hair;
   if(data.hairStyle === 1){
-    // Long hair
     CTX.beginPath();
-    CTX.moveTo(-7,-19);
-    CTX.quadraticCurveTo(-10,-6,-8,4);
+    CTX.moveTo(-7,-20); CTX.quadraticCurveTo(-10,-8,-8,4);
     CTX.lineTo(-4,5); CTX.lineTo(4,5); CTX.lineTo(8,4);
-    CTX.quadraticCurveTo(10,-6,7,-19);
+    CTX.quadraticCurveTo(10,-8,7,-20);
     CTX.closePath(); CTX.fill();
   }
-  // Top hair
-  CTX.beginPath();
-  CTX.ellipse(0,-16,10,7,0,Math.PI,0);
-  CTX.fill();
-  if(data.hairStyle===0){
-    // Short side hair
-    CTX.beginPath();
-    CTX.moveTo(-9,-15); CTX.quadraticCurveTo(-10,-8,-7,-6);
-    CTX.quadraticCurveTo(-7,-12,-6,-15); CTX.fill();
-    CTX.beginPath();
-    CTX.moveTo(9,-15); CTX.quadraticCurveTo(10,-8,7,-6);
-    CTX.quadraticCurveTo(7,-12,6,-15); CTX.fill();
-  }
 
-  // Face
+  // 2. Head — drawn over back hair
+  CTX.fillStyle = data.skin;
+  CTX.beginPath(); CTX.ellipse(0,-13,9,9.5,0,0,Math.PI*2); CTX.fill();
+  CTX.strokeStyle='rgba(0,0,0,0.09)'; CTX.lineWidth=0.7;
+  CTX.beginPath(); CTX.ellipse(0,-13,9,9.5,0,0,Math.PI*2); CTX.stroke();
+
+  // 3. Face — drawn before front hair
   // Eyes
   CTX.fillStyle = '#fff';
-  CTX.beginPath(); CTX.ellipse(-4,-13,3,3.5,0,0,Math.PI*2); CTX.fill();
-  CTX.beginPath(); CTX.ellipse(4,-13,3,3.5,0,0,Math.PI*2); CTX.fill();
+  CTX.beginPath(); CTX.ellipse(-3.5+faceDir,-13.5,3,3.5,0,0,Math.PI*2); CTX.fill();
+  CTX.beginPath(); CTX.ellipse(3.5+faceDir,-13.5,3,3.5,0,0,Math.PI*2); CTX.fill();
   CTX.fillStyle = '#505060';
-  CTX.beginPath(); CTX.ellipse(-4,-13,1.8,2,0,0,Math.PI*2); CTX.fill();
-  CTX.beginPath(); CTX.ellipse(4,-13,1.8,2,0,0,Math.PI*2); CTX.fill();
+  CTX.beginPath(); CTX.ellipse(-3.5+faceDir,-13.5,1.8,2,0,0,Math.PI*2); CTX.fill();
+  CTX.beginPath(); CTX.ellipse(3.5+faceDir,-13.5,1.8,2,0,0,Math.PI*2); CTX.fill();
   CTX.fillStyle = '#fff';
-  CTX.beginPath(); CTX.arc(-3.5,-14,0.8,0,Math.PI*2); CTX.fill();
-  CTX.beginPath(); CTX.arc(4.5,-14,0.8,0,Math.PI*2); CTX.fill();
+  CTX.beginPath(); CTX.arc(-3+faceDir,-14.5,0.8,0,Math.PI*2); CTX.fill();
+  CTX.beginPath(); CTX.arc(4+faceDir,-14.5,0.8,0,Math.PI*2); CTX.fill();
+  // Eyelid pencil line
+  CTX.strokeStyle = 'rgba(50,40,60,0.55)'; CTX.lineWidth=0.8;
+  CTX.beginPath(); CTX.ellipse(-3.5+faceDir,-13.5,3,3.5,0,Math.PI,0); CTX.stroke();
+  CTX.beginPath(); CTX.ellipse(3.5+faceDir,-13.5,3,3.5,0,Math.PI,0); CTX.stroke();
   // Blush
-  CTX.fillStyle = 'rgba(230,150,150,0.15)';
-  CTX.beginPath(); CTX.ellipse(-5,-10.5,2.5,1.2,0,0,Math.PI*2); CTX.fill();
-  CTX.beginPath(); CTX.ellipse(5,-10.5,2.5,1.2,0,0,Math.PI*2); CTX.fill();
+  CTX.fillStyle = 'rgba(225,145,145,0.13)';
+  CTX.beginPath(); CTX.ellipse(-5+faceDir,-11,2.5,1.2,0,0,Math.PI*2); CTX.fill();
+  CTX.beginPath(); CTX.ellipse(5+faceDir,-11,2.5,1.2,0,0,Math.PI*2); CTX.fill();
   // Mouth
-  CTX.strokeStyle = '#b07080';
-  CTX.lineWidth = 0.8;
-  CTX.beginPath(); CTX.arc(0,-9.5,1.5,0.2,Math.PI-0.2); CTX.stroke();
+  CTX.strokeStyle='#a87080'; CTX.lineWidth=0.8; CTX.lineCap='round';
+  CTX.beginPath(); CTX.arc(faceDir,-9.5,1.8,0.2,Math.PI-0.2); CTX.stroke();
+
+  // 4. Front/top hair — drawn LAST so forehead is covered but eyes are visible
+  CTX.fillStyle = data.hair;
+  CTX.beginPath(); CTX.ellipse(0,-16.5,9.5,6.5,0,Math.PI,0); CTX.fill();
+  if(data.hairStyle === 0){
+    // Short side tufts — stop above eye level
+    CTX.beginPath(); CTX.moveTo(-8,-16); CTX.quadraticCurveTo(-10,-11,-9,-8);
+    CTX.quadraticCurveTo(-8,-12,-7,-16); CTX.fill();
+    CTX.beginPath(); CTX.moveTo(8,-16); CTX.quadraticCurveTo(10,-11,9,-8);
+    CTX.quadraticCurveTo(8,-12,7,-16); CTX.fill();
+  } else {
+    // Long hair side pieces, narrow
+    CTX.beginPath(); CTX.moveTo(-8,-16); CTX.quadraticCurveTo(-10,-10,-9,-7);
+    CTX.quadraticCurveTo(-8,-12,-7,-16); CTX.fill();
+    CTX.beginPath(); CTX.moveTo(8,-16); CTX.quadraticCurveTo(10,-10,9,-7);
+    CTX.quadraticCurveTo(8,-12,7,-16); CTX.fill();
+  }
+  // Fringe — just forehead, stops above eyes
+  CTX.beginPath();
+  CTX.moveTo(-8,-17); CTX.quadraticCurveTo(-3,-12.5,0,-13);
+  CTX.quadraticCurveTo(3,-12.5,8,-17); CTX.closePath(); CTX.fill();
+  CTX.strokeStyle='rgba(0,0,0,0.09)'; CTX.lineWidth=0.6;
+  CTX.beginPath(); CTX.ellipse(0,-16.5,9.5,6.5,0,Math.PI,0); CTX.stroke();
 
   // Name tag
-  CTX.fillStyle = 'rgba(255,245,250,0.88)';
+  CTX.fillStyle = 'rgba(255,245,252,0.88)';
   CTX.font = 'bold 9px sans-serif';
   const tw = CTX.measureText(data.name).width;
-  CTX.fillRect(-tw*0.5-4, -30, tw+8, 13);
-  CTX.strokeStyle = 'rgba(200,150,180,0.4)';
-  CTX.lineWidth = 1;
-  CTX.strokeRect(-tw*0.5-4, -30, tw+8, 13);
-  CTX.fillStyle = '#805070';
-  CTX.textAlign = 'center';
-  CTX.fillText(data.name, 0, -20);
-  CTX.textAlign = 'left';
+  CTX.fillRect(-tw*0.5-4,-30,tw+8,13);
+  CTX.strokeStyle='rgba(200,150,180,0.4)'; CTX.lineWidth=1;
+  CTX.strokeRect(-tw*0.5-4,-30,tw+8,13);
+  CTX.fillStyle='#805070'; CTX.textAlign='center';
+  CTX.fillText(data.name,0,-20); CTX.textAlign='left';
 
   // Interaction indicator
-  if(GS.player.nearNPC === npc.id || dist(GS.player.x, GS.player.y, npc.x, npc.y) < 50){
-    const iy = -36 + Math.sin(GS.time*0.005)*3;
-    CTX.fillStyle = '#f0c0d8';
-    CTX.font = '12px sans-serif';
-    CTX.textAlign = 'center';
-    CTX.fillText('💬', 0, iy);
-    CTX.textAlign = 'left';
+  if(GS.player.nearNPC===npc.id || dist(GS.player.x,GS.player.y,npc.x,npc.y)<50){
+    const iy = -38+Math.sin(GS.time*0.005)*3;
+    CTX.fillStyle='#f0c0d8'; CTX.font='12px sans-serif';
+    CTX.textAlign='center'; CTX.fillText('💬',0,iy); CTX.textAlign='left';
   }
 
   CTX.restore();
