@@ -139,7 +139,7 @@ function colorShift(hex,amt){
   const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
   return`rgb(${clamp(r+amt,0,255)},${clamp(g+amt,0,255)},${clamp(b+amt,0,255)})`
 }
-function drawStar(ctx,x,y,r,color){
+function drawStarSimple(ctx,x,y,r,color){
   ctx.fillStyle=color;ctx.beginPath();
   for(let i=0;i<5;i++){const a=-Math.PI/2+(Math.PI*2/5)*i;
     ctx.lineTo(x+Math.cos(a)*r,y+Math.sin(a)*r);
@@ -227,7 +227,7 @@ const Particles = {
     const sx=p.x-G.camera.x,sy=p.y-G.camera.y;
     if(sx<-20||sx>CFG.VIEW_W+20||sy<-20||sy>CFG.VIEW_H+20)continue;
     ctx.globalAlpha=clamp(p.alpha,0,1);
-    if(p.type==='star')drawStar(ctx,sx,sy,p.size,p.color);
+    if(p.type==='star')drawStarSimple(ctx,sx,sy,p.size,p.color);
     else{ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(sx,sy,Math.max(0.5,p.size),0,Math.PI*2);ctx.fill();}
   }ctx.globalAlpha=1;}
 };
@@ -477,7 +477,7 @@ function renderWorld(){
       const colors = TILE_COLORS[GS.currentZone] || TILE_COLORS.beach;
       const base = colors[tid] || '#90c890';
       // Per-tile color variation
-      const hash = tileHash(x,y,GS.currentZone);
+      const hash = tileHashInt(x,y,GS.currentZone);
       const r = parseInt(base.slice(1,3),16);
       const g = parseInt(base.slice(3,5),16);
       const b = parseInt(base.slice(5,7),16);
@@ -491,7 +491,7 @@ function renderWorld(){
     }
   }
 }
-function tileHash(x,y,zone){
+function tileHashInt(x,y,zone){
   let h = (x*374761 + y*668265 + (zone.charCodeAt(0)||0)*91831) & 0xFFFFFF;
   h = ((h >> 16) ^ h) * 0x45d9f3b;
   return (h >> 16) ^ h;
