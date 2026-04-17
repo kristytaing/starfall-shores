@@ -6,28 +6,28 @@
 <title>Starfall Shores</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;overflow:hidden;background:#f5e6f0;font-family:'Segoe UI',system-ui,sans-serif}
+html,body{width:100%;height:100%;overflow:hidden;background:#8FA8D6;font-family:'Segoe UI',system-ui,sans-serif}
 canvas#game{display:block;width:100%;height:100%}
 canvas#minimap{image-rendering:pixelated}
 #ui{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10}
 #ui>*{pointer-events:auto}
-#dialogue-box{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);width:min(90%,700px);background:rgba(255,240,250,0.92);border:2px solid rgba(200,150,180,0.5);border-radius:20px;padding:20px 24px;display:none;z-index:100;backdrop-filter:blur(10px);box-shadow:0 4px 24px rgba(180,120,160,0.2)}
-#dialogue-box .speaker{color:#c06090;font-size:14px;font-weight:700;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px}
-#dialogue-box .text{color:#5a4060;font-size:16px;line-height:1.5;min-height:48px}
+#dialogue-box{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);width:min(90%,700px);background:rgba(245,234,213,0.95);border:2px solid rgba(212,143,160,0.4);border-radius:20px;padding:20px 24px;display:none;z-index:100;backdrop-filter:blur(10px);box-shadow:0 4px 24px rgba(180,120,160,0.2)}
+#dialogue-box .speaker{color:#3D2B5E;font-size:14px;font-weight:700;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px}
+#dialogue-box .text{color:#3D2B5E;font-size:16px;line-height:1.5;min-height:48px}
 #dialogue-box .continue{color:rgba(180,120,160,0.6);font-size:12px;margin-top:8px;text-align:right;animation:blink 1.2s infinite}
 #dialogue-choices{display:flex;flex-direction:column;gap:8px;margin-top:12px}
 #dialogue-choices button{background:rgba(220,180,210,0.2);border:1px solid rgba(200,150,180,0.4);color:#c06090;padding:10px 16px;border-radius:12px;font-size:14px;cursor:pointer;text-align:left;transition:all 0.2s}
 #dialogue-choices button:hover{background:rgba(220,180,210,0.35);transform:translateX(4px)}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
 #hud{position:fixed;top:0;left:0;width:100%;padding:12px 16px;display:none;z-index:50}
-#hud-quest{position:fixed;top:12px;right:16px;background:rgba(255,240,250,0.85);border:1px solid rgba(200,150,180,0.3);border-radius:14px;padding:10px 14px;color:#5a4060;font-size:12px;max-width:240px;display:none;backdrop-filter:blur(6px)}
-#hud-quest .quest-title{color:#c06090;font-weight:700;margin-bottom:4px}
-#inventory-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(90%,500px);background:rgba(255,240,250,0.95);border:2px solid rgba(200,150,180,0.4);border-radius:20px;padding:24px;display:none;z-index:200;backdrop-filter:blur(12px);box-shadow:0 8px 32px rgba(180,120,160,0.2)}
-#inventory-panel h2{color:#c06090;font-size:18px;margin-bottom:16px;text-align:center}
+#hud-quest{position:fixed;top:12px;right:16px;background:rgba(245,234,213,0.9);border:1px solid rgba(212,143,160,0.3);border-radius:14px;padding:10px 14px;color:#5a4060;font-size:12px;max-width:240px;display:none;backdrop-filter:blur(6px)}
+#hud-quest .quest-title{color:#3D2B5E;font-weight:700;margin-bottom:4px}
+#inventory-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(90%,500px);background:rgba(245,234,213,0.97);border:2px solid rgba(212,143,160,0.35);border-radius:20px;padding:24px;display:none;z-index:200;backdrop-filter:blur(12px);box-shadow:0 8px 32px rgba(61,43,94,0.15)}
+#inventory-panel h2{color:#3D2B5E;font-size:18px;margin-bottom:16px;text-align:center}
 #inventory-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
-.inv-slot{aspect-ratio:1;background:rgba(220,180,210,0.1);border:1px solid rgba(200,150,180,0.2);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:28px;cursor:pointer;transition:all 0.2s;position:relative}
-.inv-slot:hover{background:rgba(220,180,210,0.2);transform:scale(1.05)}
-.inv-slot .count{position:absolute;bottom:2px;right:4px;font-size:10px;color:#c06090}
+.inv-slot{aspect-ratio:1;background:rgba(212,143,160,0.08);border:1px solid rgba(212,143,160,0.2);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:28px;cursor:pointer;transition:all 0.2s;position:relative}
+.inv-slot:hover{background:rgba(212,143,160,0.18);transform:scale(1.05)}
+.inv-slot .count{position:absolute;bottom:2px;right:4px;font-size:10px;color:#3D2B5E}
 .inv-slot .item-name{font-size:8px;color:#8a7090;margin-top:2px}
 #quest-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(90%,500px);max-height:80vh;overflow-y:auto;background:rgba(255,240,250,0.95);border:2px solid rgba(150,160,200,0.4);border-radius:20px;padding:24px;display:none;z-index:200;backdrop-filter:blur(12px);box-shadow:0 8px 32px rgba(120,120,180,0.2)}
 #quest-log h2{color:#8080c0;font-size:18px;margin-bottom:16px;text-align:center}
@@ -39,28 +39,28 @@ canvas#minimap{image-rendering:pixelated}
 .quest-entry .status{font-size:11px;margin-top:4px}
 .quest-entry .status.active-status{color:#80b080}
 .quest-entry .status.done-status{color:#aaa}
-#title-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(180deg,#e8c8e0 0%,#f0d8e8 30%,#f8e8d0 60%,#f0d0b8 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:400;cursor:pointer;overflow-y:auto;padding:20px 0}
-#title-screen h1{font-size:clamp(28px,7vw,56px);color:#c06090;text-shadow:0 0 30px rgba(200,120,160,0.3),0 2px 4px rgba(0,0,0,0.1);margin-bottom:6px;letter-spacing:3px;flex-shrink:0}
-#title-screen h2{font-size:clamp(12px,2.5vw,18px);color:rgba(160,100,140,0.6);font-weight:400;margin-bottom:20px;letter-spacing:6px;text-transform:uppercase;flex-shrink:0}
-#title-screen .prompt{color:rgba(180,120,160,0.7);font-size:14px;animation:blink 1.5s infinite}
-#title-screen .instructions{max-width:420px;margin:0 auto 20px;padding:16px 20px;background:rgba(255,255,255,0.35);border:1px solid rgba(200,150,180,0.25);border-radius:16px;text-align:left;color:rgba(120,80,110,0.7);font-size:12px;line-height:1.6;backdrop-filter:blur(4px);flex-shrink:0}
-#title-screen .instructions h3{color:rgba(180,100,150,0.9);font-size:13px;margin-bottom:6px;text-align:center;letter-spacing:2px}
-#title-screen .instructions .keys{display:inline-block;background:rgba(200,150,180,0.15);border:1px solid rgba(200,150,180,0.3);border-radius:4px;padding:1px 6px;font-size:11px;color:rgba(160,80,130,0.8);font-family:monospace;margin:0 2px}
+#title-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(180deg,#8FA8D6 0%,#BBA8D9 35%,#D48FA0 65%,#F2C46D 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:400;cursor:pointer;overflow-y:auto;padding:20px 0}
+#title-screen h1{font-size:clamp(28px,7vw,56px);color:#F5EAD5;text-shadow:0 0 30px rgba(200,120,160,0.3),0 2px 4px rgba(0,0,0,0.1);margin-bottom:6px;letter-spacing:3px;flex-shrink:0}
+#title-screen h2{font-size:clamp(12px,2.5vw,18px);color:rgba(245,234,213,0.75);font-weight:400;margin-bottom:20px;letter-spacing:6px;text-transform:uppercase;flex-shrink:0}
+#title-screen .prompt{color:rgba(245,234,213,0.75);font-size:14px;animation:blink 1.5s infinite}
+#title-screen .instructions{max-width:420px;margin:0 auto 20px;padding:16px 20px;background:rgba(245,234,213,0.25);border:1px solid rgba(245,234,213,0.3);border-radius:16px;text-align:left;color:rgba(120,80,110,0.7);font-size:12px;line-height:1.6;backdrop-filter:blur(4px);flex-shrink:0}
+#title-screen .instructions h3{color:rgba(245,234,213,1);font-size:13px;margin-bottom:6px;text-align:center;letter-spacing:2px}
+#title-screen .instructions .keys{display:inline-block;background:rgba(245,234,213,0.2);border:1px solid rgba(245,234,213,0.4);border-radius:4px;padding:1px 6px;font-size:11px;color:rgba(245,234,213,0.95);font-family:monospace;margin:0 2px}
 #sound-toggle{position:fixed;top:12px;left:12px;width:36px;height:36px;background:rgba(255,240,250,0.7);border:1px solid rgba(200,150,180,0.3);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:500;font-size:16px;color:#c06090;transition:all 0.2s}
 #sound-toggle:hover{background:rgba(220,180,210,0.3)}
-#zone-label{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:clamp(24px,6vw,48px);color:#c06090;text-shadow:0 0 30px rgba(200,120,160,0.4);opacity:0;z-index:60;pointer-events:none;font-weight:700;letter-spacing:4px;text-transform:uppercase}
+#zone-label{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:clamp(24px,6vw,48px);color:#F2C46D;text-shadow:0 0 30px rgba(200,120,160,0.4);opacity:0;z-index:60;pointer-events:none;font-weight:700;letter-spacing:4px;text-transform:uppercase}
 #mobile-controls{position:fixed;bottom:20px;width:100%;display:none;z-index:80;padding:0 20px}
 .touch-pad{position:fixed;bottom:20px;left:20px;width:120px;height:120px;border-radius:50%;background:rgba(220,180,210,0.15);border:2px solid rgba(200,150,180,0.3)}
 .touch-stick{position:absolute;width:40px;height:40px;border-radius:50%;background:rgba(200,150,180,0.35);top:50%;left:50%;transform:translate(-50%,-50%);transition:all 0.05s}
 .action-btns{position:fixed;bottom:20px;right:20px;display:flex;gap:10px}
 .action-btn{width:50px;height:50px;border-radius:50%;background:rgba(220,180,210,0.15);border:2px solid rgba(200,150,180,0.3);color:#c06090;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-weight:700}
-#notification{position:fixed;top:60px;left:50%;transform:translateX(-50%);background:rgba(255,240,250,0.92);border:1px solid rgba(200,150,180,0.4);border-radius:14px;padding:12px 24px;color:#c06090;font-size:14px;z-index:150;opacity:0;transition:all 0.4s;pointer-events:none;white-space:nowrap;backdrop-filter:blur(8px);box-shadow:0 4px 16px rgba(180,120,160,0.15)}
+#notification{position:fixed;top:60px;left:50%;transform:translateX(-50%);background:rgba(245,234,213,0.95);border:1px solid rgba(212,143,160,0.4);border-radius:14px;padding:12px 24px;color:#3D2B5E;font-size:14px;z-index:150;opacity:0;transition:all 0.4s;pointer-events:none;white-space:nowrap;backdrop-filter:blur(8px);box-shadow:0 4px 16px rgba(180,120,160,0.15)}
 #minimap{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:50;display:none;border-radius:10px;overflow:hidden;border:1px solid rgba(200,150,180,0.3);box-shadow:0 2px 12px rgba(180,120,160,0.2)}
 #fade-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:#f5e6f0;z-index:250;opacity:0;pointer-events:none;transition:opacity 0.5s}
 </style>
 </head>
 <body>
-<div id="title-screen"><h1>✿ Starfall Shores ✿</h1><h2>An Island Adventure</h2><div class="instructions"><h3>HOW TO PLAY</h3>🚶 <span class="keys">WASD</span> or <span class="keys">Arrow Keys</span> to move<br>💬 <span class="keys">E</span> or <span class="keys">Space</span> to talk &amp; interact<br>🎒 <span class="keys">I</span> to open inventory<br>📜 <span class="keys">Q</span> to view quest log<br>🔊 <span class="keys">M</span> to toggle sound<br><br>🌟 <em>Explore the island, befriend the locals, and collect 5 Starfall Crystals to save the island!</em><br>📱 <em style="font-size:11px">Mobile: virtual joystick + ACT/BAG buttons</em></div><button id="start-btn" style="margin-top:10px;padding:14px 40px;background:rgba(200,120,160,0.2);border:2px solid rgba(200,150,180,0.4);border-radius:20px;color:#c06090;font-size:16px;cursor:pointer;letter-spacing:2px;transition:all 0.3s;flex-shrink:0">✿ Set Sail ✿</button><div class="prompt" style="margin-top:12px">Click the button to begin</div></div>
+<div id="title-screen"><h1>✿ Starfall Shores ✿</h1><h2>An Island Adventure</h2><div class="instructions"><h3>HOW TO PLAY</h3>🚶 <span class="keys">WASD</span> or <span class="keys">Arrow Keys</span> to move<br>💬 <span class="keys">E</span> or <span class="keys">Space</span> to talk &amp; interact<br>🎒 <span class="keys">I</span> to open inventory<br>📜 <span class="keys">Q</span> to view quest log<br>🔊 <span class="keys">M</span> to toggle sound<br><br>🌟 <em>Explore the island, befriend the locals, and collect 5 Starfall Crystals to save the island!</em><br>📱 <em style="font-size:11px">Mobile: virtual joystick + ACT/BAG buttons</em></div><button id="start-btn" style="margin-top:10px;padding:14px 40px;background:rgba(245,234,213,0.2);border:2px solid rgba(245,234,213,0.5);border-radius:20px;color:#F5EAD5;font-size:16px;cursor:pointer;letter-spacing:2px;transition:all 0.3s;flex-shrink:0">✿ Set Sail ✿</button><div class="prompt" style="margin-top:12px">Click the button to begin</div></div>
 <canvas id="game"></canvas>
 <div id="ui">
 <div id="hud"></div>
@@ -249,11 +249,12 @@ const ZONE_PARTICLES = {
 
 // ============ PASTEL TILE COLORS ============
 const TILE_COLORS = {
-  beach: {0:'#a8d8a0',1:'#88b8d8',2:'#f0dcc0',3:'#c8b8a8',4:'#78b878',5:'#b0a8a0',6:'#e8a0c0',7:'#98c898',8:'#d8c8a0',9:'#d0b898',10:'#8888a8',11:'#90c8d0',12:'#e8e0f0',13:'#c0d0e0',14:'#b8a080'},
-  village:{0:'#a0d098',1:'#80b0d0',2:'#e8d0a8',3:'#c0b0a0',4:'#70b070',5:'#a8a098',6:'#e8a0c0',7:'#90c090',8:'#d0c098',9:'#c8b090',10:'#8888a8',11:'#90c8d0',12:'#e8e0f0',13:'#c0d0e0',14:'#b8a080'},
-  forest: {0:'#80b878',1:'#6898b0',2:'#c8b898',3:'#909888',4:'#588858',5:'#888880',6:'#a0d8a0',7:'#70a868',8:'#a89870',9:'#a08860',10:'#8888a8',11:'#80d8a8',12:'#e8e0f0',13:'#c0d0e0',14:'#907848'},
-  caves:  {0:'#8080a0',1:'#607898',2:'#8888a0',3:'#9090a8',4:'#606880',5:'#a0a0b0',6:'#b890d0',7:'#8080a0',8:'#8888a0',9:'#8080a0',10:'#7878a0',11:'#90c8d0',12:'#e8e0f0',13:'#c0d0e0',14:'#9090a8'},
-  summit: {0:'#a0a8a0',1:'#8098b8',2:'#c8c0c8',3:'#b0a8b0',4:'#78907a',5:'#b8b0b8',6:'#a8c8e0',7:'#98a098',8:'#c0b8c0',9:'#a8a0a8',10:'#8888a8',11:'#f0d080',12:'#e8e0f0',13:'#c8d0e0',14:'#a0a0a8'}
+  // 0=grass 1=water 2=sand 3=path 4=grass2 5=rock 6=flower 7=grass3 8=floor 9=crystal 10=dark 11=shallows 12=snow 13=sky 14=earth
+  beach:  {0:'#8BAF80',1:'#6BBFBE',2:'#F5EAD5',3:'#E8D8B8',4:'#7FA873',5:'#B8A898',6:'#D48FA0',7:'#95B888',8:'#E8D8B0',9:'#BBA8D9',10:'#6A8875',11:'#88CFC8',12:'#E8E8F5',13:'#8FA8D6',14:'#C8B888'},
+  village:{0:'#8BAF80',1:'#6BBFBE',2:'#F5EAD5',3:'#D8C8A8',4:'#7FA873',5:'#A8A090',6:'#D48FA0',7:'#95B888',8:'#DDD0A8',9:'#BBA8D9',10:'#6A8875',11:'#88CFC8',12:'#E8E8F5',13:'#8FA8D6',14:'#C0A870'},
+  forest: {0:'#7A9E70',1:'#5AAFAE',2:'#C8B898',3:'#8A9878',4:'#527A50',5:'#7A7868',6:'#8BAF80',7:'#6A9868',8:'#A89870',9:'#A090C8',10:'#4A6850',11:'#70B898',12:'#D8E0F0',13:'#607848',14:'#886840'},
+  caves:  {0:'#5A5878',1:'#485A80',2:'#706878',3:'#787088',4:'#504868',5:'#907888',6:'#8878A8',7:'#5A5878',8:'#686080',9:'#9080C0',10:'#483858',11:'#7098A8',12:'#D8D0E8',13:'#3D2B5E',14:'#806878'},
+  summit: {0:'#A0A8B0',1:'#8098C0',2:'#D8D0D8',3:'#C0B8C0',4:'#7890A0',5:'#B0A8B8',6:'#BBA8D9',7:'#90A098',8:'#C8C0D0',9:'#BBA8D9',10:'#7080A0',11:'#F2C46D',12:'#E8EAF8',13:'#6858A0',14:'#A09090'}
 };
 
 const ZONES = {};
@@ -263,7 +264,7 @@ function generateZones() {
   ZONES.beach = {
     name: 'Coral Beach', w: 35, h: 25,
     tiles: [], objects: [], npcs: [], items: [], transitions: [],
-    skyTop:'#d8c0e0', skyBot:'#f0dcc8',
+    skyTop:'#8FA8D6', skyBot:'#BBA8D9',
     fogColor:'rgba(240,210,200,0.06)', ambientColor:'rgba(240,200,180,0.06)',
     spawnX: 17*CFG.TILE, spawnY: 15*CFG.TILE
   };
@@ -296,7 +297,7 @@ function generateZones() {
   ZONES.village = {
     name: 'Starfall Village', w: 40, h: 30,
     tiles: [], objects: [], npcs: [], items: [], transitions: [],
-    skyTop:'#d0c0e0', skyBot:'#e8d8d0',
+    skyTop:'#9AB5D8', skyBot:'#D4B8D0',
     fogColor:'rgba(220,200,240,0.04)', ambientColor:'rgba(230,200,220,0.05)',
     spawnX: 1*CFG.TILE+24, spawnY: 12*CFG.TILE
   };
@@ -335,7 +336,7 @@ function generateZones() {
   ZONES.forest = {
     name: 'Whispering Woods', w: 35, h: 35,
     tiles: [], objects: [], npcs: [], items: [], transitions: [],
-    skyTop:'#607848', skyBot:'#98b870',
+    skyTop:'#7A9E70', skyBot:'#A8C890',
     fogColor:'rgba(80,120,60,0.08)', ambientColor:'rgba(120,180,100,0.04)',
     spawnX: 15*CFG.TILE, spawnY: 1*CFG.TILE+24
   };
@@ -368,7 +369,7 @@ function generateZones() {
   ZONES.caves = {
     name: 'Crystal Caves', w: 30, h: 30,
     tiles: [], objects: [], npcs: [], items: [], transitions: [],
-    skyTop:'#484060', skyBot:'#605878',
+    skyTop:'#3D2B5E', skyBot:'#5A4878',
     fogColor:'rgba(80,60,100,0.1)', ambientColor:'rgba(120,100,160,0.06)',
     spawnX: 1*CFG.TILE+24, spawnY: 12*CFG.TILE
   };
@@ -395,7 +396,7 @@ function generateZones() {
   ZONES.summit = {
     name: 'Moonpeak Summit', w: 25, h: 25,
     tiles: [], objects: [], npcs: [], items: [], transitions: [],
-    skyTop:'#483868', skyBot:'#786898',
+    skyTop:'#3D3068', skyBot:'#6A5890',
     fogColor:'rgba(120,100,160,0.06)', ambientColor:'rgba(180,160,210,0.06)',
     spawnX: 12*CFG.TILE, spawnY: 1*CFG.TILE+24
   };
@@ -507,87 +508,120 @@ function tileHash(x,y,zone){
 }
 function renderTileDetail(tid, sx, sy, T, hash, zone){
   const rng = () => { hash = (hash * 1103515245 + 12345) & 0x7fffffff; return (hash%1000)/1000; };
-  if(tid === 0 || tid === 4 || tid === 6 || tid === 10){ // grass types
-    // Grass blades
-    for(let i=0;i<4;i++){
-      const gx = sx + rng()*T;
-      const gy = sy + rng()*T;
-      const gh = 4 + rng()*5;
-      const sway = Math.sin(GS.time*0.002 + gx*0.1)*2;
-      CTX.strokeStyle = `rgba(${80+rng()*40},${140+rng()*60},${60+rng()*40},0.4)`;
-      CTX.lineWidth = 1;
-      CTX.beginPath();
-      CTX.moveTo(gx, gy);
-      CTX.quadraticCurveTo(gx+sway, gy-gh*0.6, gx+sway*1.5, gy-gh);
-      CTX.stroke();
+
+  // Grass tiles — soft flat organic shapes, no hard outlines
+  if(tid===0||tid===4||tid===6||tid===7||tid===10){
+    CTX.save();
+    CTX.beginPath(); CTX.rect(sx,sy,T,T); CTX.clip();
+    if(rng()<0.4){
+      const px=sx+rng()*T, py=sy+rng()*T, pr=6+rng()*10;
+      CTX.globalAlpha=0.08+rng()*0.07;
+      CTX.fillStyle=rng()<0.5?'#7FA873':'#A8C890';
+      CTX.beginPath(); CTX.ellipse(px,py,pr,pr*0.7,rng()*Math.PI,0,Math.PI*2); CTX.fill();
+      CTX.globalAlpha=1;
     }
-    // Occasional flowers
-    if(rng() < 0.15){
-      const fx = sx + rng()*T;
-      const fy = sy + rng()*T;
-      const fc = ['#f0a0b8','#f0c080','#d0a0f0','#a0d0f0','#f0d0a0'][Math.floor(rng()*5)];
-      CTX.fillStyle = fc;
+    const tuftCount=3+Math.floor(rng()*3);
+    for(let i=0;i<tuftCount;i++){
+      const gx=sx+rng()*T, gy=sy+rng()*T, gh=2+rng()*3.5;
+      CTX.globalAlpha=0.16+rng()*0.13;
+      CTX.fillStyle=rng()<0.5?'#7FA873':'#5A8850';
+      CTX.beginPath(); CTX.ellipse(gx,gy,1,gh,0,0,Math.PI*2); CTX.fill();
+      CTX.globalAlpha=1;
+    }
+    if(rng()<0.14){
+      const fx=sx+8+rng()*(T-16), fy=sy+8+rng()*(T-16);
+      const fc=['#D48FA0','#F2C46D','#BBA8D9','#8FA8D6','#F5EAD5'][Math.floor(rng()*5)];
+      CTX.fillStyle=fc; CTX.globalAlpha=0.82;
       for(let p=0;p<5;p++){
-        const a = p*Math.PI*2/5;
-        CTX.beginPath();
-        CTX.ellipse(fx+Math.cos(a)*3, fy+Math.sin(a)*3, 2.5, 1.5, a, 0, Math.PI*2);
-        CTX.fill();
+        const a=p*Math.PI*2/5;
+        CTX.beginPath(); CTX.ellipse(fx+Math.cos(a)*4,fy+Math.sin(a)*4,3,1.8,a,0,Math.PI*2); CTX.fill();
       }
-      CTX.fillStyle = '#f8e878';
-      CTX.beginPath(); CTX.arc(fx,fy,1.5,0,Math.PI*2); CTX.fill();
+      CTX.fillStyle='#F2C46D'; CTX.globalAlpha=1;
+      CTX.beginPath(); CTX.arc(fx,fy,2,0,Math.PI*2); CTX.fill();
     }
+    CTX.restore();
   }
-  if(tid === 1 || tid === 7){ // water
-    CTX.globalAlpha = 0.12;
-    for(let i=0;i<2;i++){
-      const wx = sx + rng()*T;
-      const wy = sy + rng()*T;
-      const ww = 8 + rng()*12;
-      const wphase = Math.sin(GS.time*0.003 + wx*0.05 + wy*0.03);
-      CTX.strokeStyle = 'rgba(255,255,255,0.5)';
-      CTX.lineWidth = 1;
-      CTX.beginPath();
-      CTX.moveTo(wx, wy);
-      CTX.quadraticCurveTo(wx+ww*0.5, wy+wphase*3, wx+ww, wy);
-      CTX.stroke();
+
+  // Water — smooth shimmer bands only, flat
+  if(tid===1||tid===7||tid===11){
+    CTX.save();
+    CTX.beginPath(); CTX.rect(sx,sy,T,T); CTX.clip();
+    const shimY=sy+(T*0.35)+Math.sin(GS.time*0.0015+sx*0.03)*5;
+    const shimGrad=CTX.createLinearGradient(sx,shimY-4,sx,shimY+4);
+    shimGrad.addColorStop(0,'rgba(255,255,255,0)');
+    shimGrad.addColorStop(0.5,'rgba(255,255,255,0.14)');
+    shimGrad.addColorStop(1,'rgba(255,255,255,0)');
+    CTX.fillStyle=shimGrad; CTX.fillRect(sx,shimY-4,T,8);
+    const hx=sx+T*0.3+Math.sin(GS.time*0.002+sy*0.05)*8, hy=sy+T*0.65;
+    CTX.globalAlpha=0.09+Math.sin(GS.time*0.003+hx)*0.04;
+    CTX.fillStyle='#F5EAD5';
+    CTX.beginPath(); CTX.ellipse(hx,hy,7,2.5,0,0,Math.PI*2); CTX.fill();
+    CTX.globalAlpha=1;
+    CTX.restore();
+  }
+
+  // Sand/path — warm grain stipple
+  if(tid===2||tid===3){
+    CTX.save();
+    CTX.beginPath(); CTX.rect(sx,sy,T,T); CTX.clip();
+    const dotCount=5+Math.floor(rng()*6);
+    for(let i=0;i<dotCount;i++){
+      const dx=sx+rng()*T, dy=sy+rng()*T;
+      CTX.globalAlpha=0.07+rng()*0.08;
+      CTX.fillStyle=rng()<0.5?'#C8B070':'#E8D8A0';
+      CTX.beginPath(); CTX.arc(dx,dy,0.8+rng()*1,0,Math.PI*2); CTX.fill();
     }
-    CTX.globalAlpha = 1;
+    CTX.globalAlpha=1;
+    CTX.restore();
   }
-  if(tid === 2 || tid === 3){ // sand/path
-    CTX.globalAlpha = 0.1;
-    for(let i=0;i<3;i++){
-      const dx = sx + rng()*T;
-      const dy = sy + rng()*T;
-      CTX.fillStyle = `rgba(${180+rng()*40},${160+rng()*40},${120+rng()*40},0.3)`;
-      CTX.beginPath(); CTX.arc(dx,dy,1+rng(),0,Math.PI*2); CTX.fill();
-    }
-    CTX.globalAlpha = 1;
-  }
-  if(tid === 9){ // crystal ground
+
+  // Crystal ground — flat glowing shards
+  if(tid===9){
+    CTX.save();
+    CTX.beginPath(); CTX.rect(sx,sy,T,T); CTX.clip();
     if(rng()<0.3){
-      const cx = sx + rng()*T;
-      const cy = sy + rng()*T;
-      const sparkle = 0.3 + Math.sin(GS.time*0.005+cx)*0.3;
-      CTX.globalAlpha = sparkle;
-      CTX.fillStyle = '#e0d0f0';
-      CTX.beginPath();
-      CTX.moveTo(cx, cy-4); CTX.lineTo(cx+2, cy); CTX.lineTo(cx, cy+4); CTX.lineTo(cx-2, cy);
-      CTX.fill();
-      CTX.globalAlpha = 1;
+      const cx=sx+5+rng()*(T-10), cy=sy+5+rng()*(T-10);
+      const pulse=0.3+Math.sin(GS.time*0.003+cx+cy)*0.25;
+      CTX.globalAlpha=pulse*0.6;
+      CTX.fillStyle='#BBA8D9';
+      const sh=5+rng()*6;
+      CTX.beginPath(); CTX.moveTo(cx,cy-sh); CTX.lineTo(cx+sh*0.5,cy); CTX.lineTo(cx,cy+sh); CTX.lineTo(cx-sh*0.5,cy); CTX.closePath(); CTX.fill();
+      CTX.globalAlpha=pulse*0.3; CTX.fillStyle='#F5EAD5';
+      CTX.beginPath(); CTX.moveTo(cx,cy-sh*0.5); CTX.lineTo(cx+sh*0.25,cy); CTX.lineTo(cx,cy+sh*0.5); CTX.lineTo(cx-sh*0.25,cy); CTX.closePath(); CTX.fill();
+      CTX.globalAlpha=1;
     }
+    CTX.restore();
   }
-  if(tid === 12){ // snow
-    CTX.globalAlpha = 0.15;
-    for(let i=0;i<2;i++){
-      const sx2 = sx + rng()*T;
-      const sy2 = sy + rng()*T;
-      const sp = 0.5 + Math.sin(GS.time*0.004+sx2+sy2)*0.5;
-      CTX.fillStyle = `rgba(255,255,255,${sp*0.5})`;
-      CTX.beginPath(); CTX.arc(sx2,sy2,1,0,Math.PI*2); CTX.fill();
+
+  // Snow — soft flat flakes
+  if(tid===12){
+    CTX.save();
+    CTX.beginPath(); CTX.rect(sx,sy,T,T); CTX.clip();
+    if(rng()<0.18){
+      const fx=sx+4+rng()*(T-8), fy=sy+4+rng()*(T-8);
+      const pulse=0.12+Math.sin(GS.time*0.002+fx)*0.08;
+      CTX.globalAlpha=pulse; CTX.fillStyle='#E8EAF8';
+      CTX.beginPath(); CTX.arc(fx,fy,2+rng()*2,0,Math.PI*2); CTX.fill();
+      CTX.globalAlpha=1;
     }
-    CTX.globalAlpha = 1;
+    CTX.restore();
+  }
+
+  // Dark floor — plum depth patches
+  if(tid===5||tid===8||tid===10){
+    CTX.save();
+    CTX.beginPath(); CTX.rect(sx,sy,T,T); CTX.clip();
+    if(rng()<0.22){
+      const px=sx+rng()*T, py=sy+rng()*T;
+      CTX.globalAlpha=0.05+rng()*0.07;
+      CTX.fillStyle='#3D2B5E';
+      CTX.beginPath(); CTX.ellipse(px,py,5+rng()*7,3+rng()*4,rng()*Math.PI,0,Math.PI*2); CTX.fill();
+      CTX.globalAlpha=1;
+    }
+    CTX.restore();
   }
 }
+
 
 // ── Object Rendering ──────────────────────────────
 function renderObject(obj, camX, camY){
@@ -600,19 +634,18 @@ function renderObject(obj, camX, camY){
   switch(obj.type){
     case 'palm_tree':
       // Trunk
-      CTX.fillStyle = '#c8a878';
+      CTX.fillStyle = '#C8A870';
       CTX.fillRect(x+w*0.4, y+h*0.3, w*0.2, h*0.7);
-      CTX.strokeStyle='rgba(140,100,60,0.25)';CTX.lineWidth=1.2;
-      CTX.strokeRect(x+w*0.4,y+h*0.3,w*0.2,h*0.7);
+      
       // Trunk lines
-      CTX.strokeStyle = 'rgba(160,120,80,0.3)';
+      CTX.strokeStyle = 'rgba(160,120,70,0.2)';
       CTX.lineWidth = 1;
       for(let i=0;i<4;i++){
         const ly = y+h*0.35+i*h*0.15;
         CTX.beginPath(); CTX.moveTo(x+w*0.4,ly); CTX.lineTo(x+w*0.6,ly); CTX.stroke();
       }
       // Fronds
-      CTX.fillStyle = '#90c880';
+      CTX.fillStyle = '#8BAF80';
       for(let i=0;i<5;i++){
         const angle = -Math.PI*0.8 + i*Math.PI*0.4;
         const sway = Math.sin(GS.time*0.002+i)*0.1;
@@ -622,12 +655,11 @@ function renderObject(obj, camX, camY){
         CTX.beginPath();
         CTX.ellipse(0, -w*0.5, w*0.12, w*0.5, 0, 0, Math.PI*2);
         CTX.fill();
-        CTX.strokeStyle='rgba(60,110,50,0.2)';CTX.lineWidth=0.8;
-        CTX.beginPath();CTX.ellipse(0,-w*0.5,w*0.12,w*0.5,0,0,Math.PI*2);CTX.stroke();
+        
         CTX.restore();
       }
       // Coconuts
-      CTX.fillStyle = '#c09060';
+      CTX.fillStyle = '#C8A060';
       CTX.beginPath(); CTX.arc(x+w*0.45,y+h*0.32,3,0,Math.PI*2); CTX.fill();
       CTX.beginPath(); CTX.arc(x+w*0.55,y+h*0.34,3,0,Math.PI*2); CTX.fill();
       break;
@@ -635,8 +667,7 @@ function renderObject(obj, camX, camY){
       // Wall
       CTX.fillStyle = obj.color || '#e8b0b0';
       CTX.fillRect(x+4, y+h*0.35, w-8, h*0.65);
-      CTX.strokeStyle='rgba(0,0,0,0.12)';CTX.lineWidth=1.2;
-      CTX.strokeRect(x+4,y+h*0.35,w-8,h*0.65);
+      
       // Wall texture
       CTX.strokeStyle = 'rgba(0,0,0,0.05)';
       CTX.lineWidth = 1;
@@ -651,8 +682,7 @@ function renderObject(obj, camX, camY){
       CTX.lineTo(x+w*0.5, y);
       CTX.lineTo(x+w, y+h*0.35);
       CTX.fill();
-      CTX.strokeStyle='rgba(0,0,0,0.14)';CTX.lineWidth=1.3;
-      CTX.beginPath();CTX.moveTo(x,y+h*0.35);CTX.lineTo(x+w*0.5,y);CTX.lineTo(x+w,y+h*0.35);CTX.closePath();CTX.stroke();
+      
       // Door
       CTX.fillStyle = '#a07850';
       CTX.fillRect(x+w*0.38, y+h*0.55, w*0.24, h*0.45);
