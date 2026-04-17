@@ -8,6 +8,7 @@
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;overflow:hidden;background:#8FA8D6;font-family:'Segoe UI',system-ui,sans-serif}
 canvas#game{display:block;width:100%;height:100%}
+#grain-overlay{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:5;opacity:0.035;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");background-size:200px 200px}
 canvas#minimap{image-rendering:pixelated}
 #ui{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10}
 #ui>*{pointer-events:auto}
@@ -62,6 +63,7 @@ canvas#minimap{image-rendering:pixelated}
 <body>
 <div id="title-screen"><h1>✿ Starfall Shores ✿</h1><h2>An Island Adventure</h2><div class="instructions"><h3>HOW TO PLAY</h3>🚶 <span class="keys">WASD</span> or <span class="keys">Arrow Keys</span> to move<br>💬 <span class="keys">E</span> or <span class="keys">Space</span> to talk &amp; interact<br>🎒 <span class="keys">I</span> to open inventory<br>📜 <span class="keys">Q</span> to view quest log<br>🔊 <span class="keys">M</span> to toggle sound<br><br>🌟 <em>Explore the island, befriend the locals, and collect 5 Starfall Crystals to save the island!</em><br>📱 <em style="font-size:11px">Mobile: virtual joystick + ACT/BAG buttons</em></div><button id="start-btn" style="margin-top:10px;padding:14px 40px;background:rgba(245,234,213,0.2);border:2px solid rgba(245,234,213,0.5);border-radius:20px;color:#F5EAD5;font-size:16px;cursor:pointer;letter-spacing:2px;transition:all 0.3s;flex-shrink:0">✿ Set Sail ✿</button><div class="prompt" style="margin-top:12px">Click the button to begin</div></div>
 <canvas id="game"></canvas>
+<div id="grain-overlay"></div>
 <div id="ui">
 <div id="hud"></div>
 <div id="hud-quest"><div class="quest-title"></div><div class="quest-desc"></div></div>
@@ -118,8 +120,17 @@ const G = {
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 function resize() {
-  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-  CFG.VIEW_W = canvas.width; CFG.VIEW_H = canvas.height;
+  const dpr = window.devicePixelRatio || 1;
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  canvas.width = Math.round(w * dpr);
+  canvas.height = Math.round(h * dpr);
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  CFG.VIEW_W = w;
+  CFG.VIEW_H = h;
+  CFG.DPR = dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
 resize();
 
@@ -1414,10 +1425,15 @@ function checkCollision(px, py, zone){
   // Object collision
   const z = ZONES[zone];
   if(z){
+    // Only visually large/solid objects block — decorative items never block
+    const SOLID_TYPES = new Set(['palm_tree','palm','house','tree_village','ancient_tree','rock_lg','fountain','crystal_big','lighthouse']);
     for(const obj of z.objects){
-      if(obj.type==='flower_patch'||obj.type==='mushroom'||obj.type==='mushroom_cluster') continue;
+      if(!SOLID_TYPES.has(obj.type)) continue;
       const ox = obj.x*T, oy = obj.y*T, ow = (obj.w||1)*T, oh = (obj.h||1)*T;
-      if(px+32-margin>ox+4 && px+margin<ox+ow-4 && py+32-2>oy+oh*0.4 && py+16<oy+oh){
+      // Use a tighter footprint — only block at base of object, not full height
+      const footTop = oy + oh*0.55;
+      const footBot = oy + oh;
+      if(px+32-margin>ox+6 && px+margin<ox+ow-6 && py+32-2>footTop && py+20<footBot){
         return true;
       }
     }
@@ -2026,7 +2042,6 @@ function renderPostProcessing(){
   const z = ZONES[GS.currentZone];
   if(!z) return;
   // Ambient color overlay (warm pastel tint)
-  CTX.globalAlpha = 0.04;
   CTX.fillStyle = z.ambientColor || 'rgba(240,200,220,0.06)';
   CTX.fillRect(0,0,canvas.width,canvas.height);
   CTX.globalAlpha = 1;
