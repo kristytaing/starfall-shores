@@ -1303,10 +1303,10 @@ function checkCollision(px, py, zone){
     for(const obj of z.objects){
       if(!SOLID_TYPES.has(obj.type)) continue;
       const ox = obj.x*T, oy = obj.y*T, ow = (obj.w||1)*T, oh = (obj.h||1)*T;
-      // Use a tighter footprint — only block at base of object, not full height
-      const footTop = oy + oh*0.55;
-      const footBot = oy + oh;
-      if(px+32-margin>ox+6 && px+margin<ox+ow-6 && py+32-2>footTop && py+20<footBot){
+      // Only block the bottom 1 tile (foot) of the object
+      const footTop = oy + oh - T;
+      const footBot = oy + oh + 4;
+      if(px+32-margin>ox+4 && px+margin<ox+ow-4 && py+32>footTop && py+24<footBot){
         return true;
       }
     }
