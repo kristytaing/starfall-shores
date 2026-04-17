@@ -344,11 +344,11 @@ function generateZones() {
     {x:0,y:11,w:1,h:4,to:'beach',toX:33*CFG.TILE,toY:12*CFG.TILE},
     {x:18,y:29,w:4,h:1,to:'forest',toX:15*CFG.TILE,toY:1*CFG.TILE+24},
     {x:39,y:13,w:1,h:4,to:'caves',toX:1*CFG.TILE+24,toY:12*CFG.TILE},
-    // House doors — walk into buildings
-    {x:8,y:8,w:1,h:1,to:'mayors_house',toX:6*CFG.TILE,toY:8*CFG.TILE},
-    {x:8,y:23,w:1,h:1,to:'pips_house',toX:6*CFG.TILE,toY:8*CFG.TILE},
-    {x:32,y:8,w:1,h:1,to:'general_store',toX:7*CFG.TILE,toY:8*CFG.TILE},
-    {x:32,y:23,w:1,h:1,to:'lunas_observatory',toX:7*CFG.TILE,toY:12*CFG.TILE}
+    // House doors — walk into buildings (y=9/24 = one tile south of house footprint)
+    {x:7,y:9,w:2,h:1,to:'mayors_house',toX:6*CFG.TILE,toY:8*CFG.TILE},
+    {x:7,y:24,w:2,h:1,to:'pips_house',toX:6*CFG.TILE,toY:8*CFG.TILE},
+    {x:31,y:9,w:2,h:1,to:'general_store',toX:7*CFG.TILE,toY:8*CFG.TILE},
+    {x:31,y:24,w:2,h:1,to:'lunas_observatory',toX:7*CFG.TILE,toY:12*CFG.TILE}
   );
 
   // Forest - 35x35
@@ -1502,7 +1502,12 @@ function checkCollision(px, py, zone){
       // Only block the bottom 1 tile (foot) of the object
       const footTop = oy + oh - T;
       const footBot = oy + oh + 4;
-      if(px+32-margin>ox+4 && px+margin<ox+ow-4 && py+32>footTop && py+24<footBot){
+      // Leave a door gap at the horizontal center of house objects
+      const hasDoorGap = obj.type==='house';
+      const doorLeft = ox + ow*0.38 - 4;
+      const doorRight = ox + ow*0.62 + 4;
+      const inDoorGap = hasDoorGap && px+margin < doorRight && px+32-margin > doorLeft;
+      if(!inDoorGap && px+32-margin>ox+4 && px+margin<ox+ow-4 && py+32>footTop && py+24<footBot){
         return true;
       }
     }
