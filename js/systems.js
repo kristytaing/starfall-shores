@@ -37,11 +37,14 @@ function recomputeItemEffects() {
   GS.lanternActive = false;
   GS.coralCharmActive = false;
   GS.shadowCloakActive = false;
+  GS.speedMult = 1.0;
   // Apply from inventory
   (GS.inventory || []).forEach(item => {
     const fx = ITEM_EFFECTS[item.name];
     if (fx && fx.passive && fx.onEquip) fx.onEquip();
   });
+  // Lucky Compass gives a 20% speed boost
+  if (GS.compassActive) GS.speedMult = 1.2;
 }
 
 // ── World State — Reacts to crystalsFound ────────────────────
@@ -208,16 +211,8 @@ function placeQuestWorldItems() {
       });
     }
   }
-  // Cave Lantern — hidden in cave alcove
-  if (ZONES.caves) {
-    if (!ZONES.caves.items.find(i => i.id === 'cave_lantern')) {
-      ZONES.caves.items.push({
-        id: 'cave_lantern', x: 10 * T + 8, y: 10 * T + 8,
-        item: 'Cave Lantern', icon: '🏮', taken: false,
-        hint: 'An old lantern left by a previous explorer'
-      });
-    }
-  }
+  // Cave Lantern — skip if already placed by core.js (id:'lantern')
+  // The lantern in core.js covers this; no duplicate needed.
   // Coral Charm — on the beach near the tide pools
   if (ZONES.beach) {
     if (!ZONES.beach.items.find(i => i.id === 'coral_charm')) {

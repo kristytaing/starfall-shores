@@ -45,6 +45,9 @@ function loadGame(){
     }
     GS.camera.x = GS.player.x - CFG.VIEW_W/2;
     GS.camera.y = GS.player.y - CFG.VIEW_H/2;
+    // Recompute derived state from loaded inventory/crystals
+    if(typeof recomputeItemEffects === 'function') recomputeItemEffects();
+    if(typeof updateWorldState === 'function') updateWorldState();
     return true;
   } catch(e){ console.warn('Load failed:', e); return false; }
 }

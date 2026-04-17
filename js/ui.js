@@ -145,10 +145,22 @@ function renderInventoryUI(){
     grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#b0a0b0;padding:20px;">No items yet! Explore the island to find treasures.</div>';
     return;
   }
+  const ITEM_DESCS = {
+    'Coral Charm':    'Walk through shallow water',
+    'Lucky Compass':  'Minimap shows nearest crystal',
+    'Shadow Cloak':   'Slip past cave guardians',
+    'Cave Lantern':   'Lights up dark cave areas',
+    'Forest Map':     'Reveals forest shortcuts',
+    'Shell Necklace': 'A beautiful sea treasure',
+    'Crystal Lens':   'Read ancient inscriptions',
+    'Beacon Shard':   'Powers the old lighthouse',
+  };
   GS.inventory.forEach(item=>{
     const slot = document.createElement('div');
     slot.className = 'inv-slot';
-    slot.innerHTML = `<span style="font-size:20px">${item.icon||'✦'}</span><br><span style="font-size:9px;color:#907080">${item.name}</span>`;
+    slot.title = ITEM_DESCS[item.name] || '';
+    const desc = ITEM_DESCS[item.name] ? `<div style="font-size:8px;color:#a08898;margin-top:2px;line-height:1.2">${ITEM_DESCS[item.name]}</div>` : '';
+    slot.innerHTML = `<span style="font-size:20px">${item.icon||'✦'}</span><br><span style="font-size:9px;color:#907080">${item.name}</span>${desc}`;
     if(item.crystal) slot.style.background = 'rgba(200,160,230,0.2)';
     grid.appendChild(slot);
   });
@@ -251,13 +263,30 @@ function renderHUD(){
   CTX.textBaseline = 'middle';
   CTX.fillText(coinLabel, coinX + 12, 30);
 
+  // ── Star Altar reminder (all 5 crystals, not yet ended) ─
+  if((GS.crystalsFound||0) >= 5 && !GS.ending){
+    const pulse = 0.7 + 0.3 * Math.sin(Date.now() / 400);
+    const altarMsg = '✦ Head to the Summit Altar! ✦';
+    CTX.font = 'bold 13px sans-serif';
+    const aw = CTX.measureText(altarMsg).width;
+    CTX.fillStyle = `rgba(180,120,220,${0.85 * pulse})`;
+    hudRoundRect(CTX, CFG.VIEW_W/2 - aw/2 - 14, 56, aw + 28, 26, 10);
+    CTX.fill();
+    CTX.fillStyle = `rgba(255,240,255,${pulse})`;
+    CTX.textAlign = 'center';
+    CTX.textBaseline = 'middle';
+    CTX.fillText(altarMsg, CFG.VIEW_W/2, 69);
+    CTX.textAlign = 'left';
+    CTX.textBaseline = 'alphabetic';
+  }
+
   // ── Interaction hint (bottom center) ───────────────────
   CTX.textAlign = 'left';
   CTX.textBaseline = 'alphabetic';
   if(!GS.dialogue.active){
     let hint = null;
-    if(GS.player.nearNPC) hint = isMobile() ? 'Tap 💬 to talk' : 'Press Space to talk';
-    else if(GS.player.nearItem) hint = isMobile() ? 'Tap ✦ to pick up' : 'Press Space to pick up';
+    if(GS.player.nearNPC) hint = isMobile() ? 'Tap 💬 to talk' : 'Press E to talk';
+    else if(GS.player.nearItem) hint = isMobile() ? 'Tap ✦ to pick up' : 'Press E to pick up';
     if(hint){
       CTX.font = '12px sans-serif';
       const hw = CTX.measureText(hint).width;

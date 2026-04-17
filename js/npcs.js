@@ -255,7 +255,7 @@ function checkCollision(px, py, zone){
 
 function updatePlayer(dt){
   const p = GS.player;
-  const speed = CFG.PLAYER_SPEED * dt;
+  const speed = CFG.PLAYER_SPEED * (GS.speedMult || 1.0) * dt;
   let dx=0, dy=0;
   if(INPUT.keys['ArrowUp']||INPUT.keys['KeyW']||INPUT.keys['w']||INPUT.keys['W']) dy=-1;
   if(INPUT.keys['ArrowDown']||INPUT.keys['KeyS']||INPUT.keys['s']||INPUT.keys['S']) dy=1;
@@ -493,11 +493,21 @@ function startNPCDialogue(npcId){
   if(data.dynamicDialogue){
     const dynLine = data.dynamicDialogue();
     if(dynLine){
-      GS.dialogue = {
-        active:true, npcId, lines:[{text:dynLine,idle:true}],
-        lineIdx:0, charIdx:0, text:'', choices:[], phase:'typing'
-      };
-      renderDialogueUI();
+      GS.dialogue.active = true;
+      GS.dialogue.npcId = npcId;
+      GS.dialogue.lines = [dynLine];
+      GS.dialogue.lineIndex = 0;
+      GS.dialogue.charIndex = 0;
+      GS.dialogue.timer = 0;
+      GS.player.interacting = true;
+      const data2 = NPC_DATA[npcId];
+      const box2 = document.getElementById('dialogue-box');
+      const nameEl2 = document.getElementById('dialogue-name');
+      const textEl2 = document.getElementById('dialogue-text');
+      box2.style.display = 'block';
+      nameEl2.textContent = data2 ? data2.name : npcId;
+      textEl2.textContent = '';
+      playSound('talk');
       return;
     }
   }
@@ -544,12 +554,15 @@ function startNPCDialogue(npcId){
           GS.dialogue.lines.push(d.text);
           // Remove needed item, add reward
           GS.inventory = GS.inventory.filter(i=>i.name!==quest.need);
-          GS.inventory.push({name:d.reward, icon:'🎁', crystal:false});
+          const REWARD_ICONS = {'Coral Charm':'🐚','Lucky Compass':'🧭','Shadow Cloak':'🌑','Cave Lantern':'🏮','Forest Map':'🗺️'};
+          GS.inventory.push({name:d.reward, icon:REWARD_ICONS[d.reward]||'🎁', crystal:false});
           if(!GS.quests.completed) GS.quests.completed = [];
           GS.quests.completed.push(d.quest);
           GS.quests.active = GS.quests.active.filter(q=>q.id!==d.quest);
-          showNotification('Quest Complete! Got: '+d.reward);
+          showNotification('Quest Complete! Got: '+d.reward+' '+(REWARD_ICONS[d.reward]||'🎁'));
           playSound('quest');
+          if(typeof recomputeItemEffects === 'function') recomputeItemEffects();
+          if(typeof updateWorldState === 'function') updateWorldState();
           addedQuest = true;
           break;
         }
